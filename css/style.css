@@ -2162,3 +2162,46 @@ summary {
 html {
     scroll-behavior: smooth;
 }
+
+/* 画像がスクロールに合わせて現れる */
+.comic-image {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.comic-image.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 再生中だけヘッダーの波形を動かす */
+body.is-audio-playing .hero-wave span {
+  animation: radio-wave 0.9s ease-in-out infinite alternate;
+}
+
+body.is-audio-playing .hero-wave span:nth-child(3n + 1) {
+  animation-delay: -0.35s;
+}
+
+body.is-audio-playing .hero-wave span:nth-child(3n + 2) {
+  animation-delay: -0.65s;
+}
+
+@keyframes radio-wave {
+  from { transform: scaleY(0.55); }
+  to   { transform: scaleY(1.45); }
+}
+
+/* 動きを減らす設定の端末ではアニメーションを控える */
+@media (prefers-reduced-motion: reduce) {
+  .comic-image {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  body.is-audio-playing .hero-wave span {
+    animation: none;
+  }
+}

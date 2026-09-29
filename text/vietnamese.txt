@@ -1,23 +1,50 @@
-◆Hậu quả của một kỹ sư xây dựng ra vẻ ta đây nhưng lại thua kém sự phát triển của nhân viên trẻ
+◆ Kỹ sư xây dựng giỏi chuyên môn nhưng không có tiếng nói thì nên làm gì?
 
-Trên công trường, đôi khi tôi gặp những kỹ sư trẻ phát triển một cách kinh ngạc. Lúc mới vào công ty, họ thậm chí còn lúng túng trong việc đo đạc và chỉ biết chờ chỉ thị từ tiền bối. Thế nhưng chỉ vài năm sau, họ đã có thể bao quát công trường và trở thành người nhận được sự tin tưởng từ các công ty đối tác.
+Trên công trường, có những người "làm việc rất giỏi nhưng không hiểu sao tiếng nói lại yếu". Trái lại, có những người tuy số năm kinh nghiệm chưa nhiều nhưng khi phát biểu trong cuộc họp, mọi người xung quanh đều lắng nghe và các công ty hợp tác cũng sẵn sàng hành động. Sự khác biệt này nằm ở đâu?
 
-Mỗi khi chứng kiến hình ảnh đó, tôi lại nhớ đến một câu nói: "Sĩ biệt tam nhật, đương quát mục tương đãi" (Người quân tử xa nhau ba ngày thì phải dùng con mắt khác mà nhìn nhau). Đây là câu nói dành cho những ai đã chứng kiến sự trưởng thành vượt bậc nhờ nỗ lực học tập của vị tướng Lữ Mông thời Tam Quốc (Trung Quốc). Câu này có nghĩa là: "Trong một thời gian ngắn không gặp, con người đã có thể phát triển vượt bậc, vì vậy hãy mở to mắt và nhìn nhận lại." Trong ngành xây dựng, chẳng phải điều này cũng hoàn toàn đúng sao?
+Các nhà tâm lý học xã hội John French và Bertram Raven phân loại sức mạnh ảnh hưởng của một người lên người khác như sau:
 
-"Vì là nhân viên mới nên chưa làm được gì", "Vì là người trẻ nên chưa thể giao việc" — đôi khi chúng ta lại áp đặt những định kiến như vậy. Tuy nhiên, những người không ngừng nỗ lực sẽ thay đổi đến mức không nhận ra chỉ sau vài tháng hoặc vài năm.
+・ Quyền lực thưởng: Cho người khác phần thưởng để thúc đẩy họ
+・ Quyền lực cưỡng chế: Bắt buộc người khác phải hành động
+・ Quyền lực hợp pháp: Dùng tính hợp pháp để thúc đẩy người khác
+・ Quyền lực chuyên môn: Dùng chuyên môn để thúc đẩy người khác
+・ Quyền lực tham chiếu: Dùng năng lực lãnh đạo để thúc đẩy người khác
+・ Quyền lực thông tin: Dùng lượng thông tin để thúc đẩy người khác
 
-Mặt khác, các kỹ sư lâu năm cũng không thể chủ quan. Những công nghệ mới như thi công ICT, BIM/CIM, drone, AI và DX xây dựng đang liên tục xuất hiện. "Từ xưa đến nay vẫn làm theo cách này", "Giờ còn học thêm điều mới làm gì" — ngay khoảnh khắc suy nghĩ như vậy xuất hiện, sự phát triển với tư cách là một kỹ sư sẽ dừng lại.
+Trong số này, tôi nghĩ những điều mà kỹ sư xây dựng đặc biệt cần ý thức là "Quyền lực chuyên môn", "Quyền lực tham chiếu" và "Quyền lực thông tin".
 
-Trong các buổi đào tạo, tôi luôn chia sẻ một điều: Kỹ sư phát triển là người tự so sánh mình với ngày hôm qua, chứ không so sánh với người khác. "Hôm nay viết bản kế hoạch thi công nhanh hơn hôm qua", "Họp với công ty đối tác tốt hơn trước", "Giải thích cho cấp dưới trẻ dễ hiểu hơn" — những ai tích lũy từng bước phát triển nhỏ như vậy sẽ tiến rất xa.
+◆ Quyền lực chuyên môn
 
-Nhà thơ La Mã cổ đại Horatius từng để lại câu nói: "Tôi không còn là tôi của ngày xưa". Câu nói chứa đựng quyết tâm muốn trở thành một bản thân phát triển hơn, dù chỉ là một chút, so với chính mình của ngày hôm qua. Các kỹ sư xây dựng cũng vậy.
+Đây là sức mạnh khiến người khác nghĩ rằng "Người này rất am hiểu kỹ thuật", "Hỏi người này thì chắc chắn không sai". Ví dụ như những người được nói đến kiểu: "Nói về bê tông thì là anh ○○", "Thi công ICT thì là anh △△", "Quản lý tiến độ thì là anh □□". Quyền lực chuyên môn sẽ nâng cao nhờ việc lấy các chứng chỉ, học hỏi kỹ thuật mới, phương pháp thi công mới hay tích lũy kinh nghiệm qua các công trình khó.
 
-Bắt đầu học để lấy chứng chỉ. Đọc 10 trang sách chuyên ngành mỗi ngày. Trải nghiệm thử các thiết bị ICT mới. Học lại chính mình thông qua việc hướng dẫn nhân viên trẻ. Sự tích lũy đó sẽ tạo ra khoảng cách rất lớn sau vài năm.
+Đối với các kỹ sư trẻ, thay vì chỉ yêu cầu họ đạt 70 điểm ở tất cả mọi mặt, điều quan trọng là hãy giúp họ sở hữu một lĩnh vực chuyên môn mà "không thua bất kỳ ai" (hay còn gọi là tài lẻ/ngón nghề riêng).
 
-Những người được mọi người xung quanh nhận xét: "Dạo này người đó thực sự trưởng thành đấy" đều có một điểm chung. Đó không phải là tài năng, mà là thái độ luôn không ngừng học hỏi.
+◆ Quyền lực tham chiếu
 
-"Vì bận rộn", "Vì không có thời gian", "Vì đã có tuổi" — nếu cứ đưa ra những cái cớ như vậy, bạn sẽ không thể vượt qua bản thân của ngày hôm qua.
+Đây là sức mạnh khiến người khác nghĩ rằng "Tôi muốn đi theo người đó", "Tôi muốn trở thành người như đó". Khi xảy ra sự cố trên công trường, thay vì đổ lỗi cho cấp dưới, họ tự mình đứng ra đi đầu xử lý. Khi bận rộn, họ cùng suy nghĩ giải pháp với các công ty hợp tác. Khi người trẻ thất bại, họ có thể nói: "Trách nhiệm tôi sẽ chịu, trước mắt hãy cùng nghĩ cách khắc phục nhé". Những người như vậy sẽ tạo ra tiếng nói vượt ra ngoài cả chức vụ.
 
-Con người có thể bắt đầu phát triển và trưởng thành ở bất kỳ độ tuổi nào. Xây dựng là công việc coi trọng kinh nghiệm. Chính vì vậy, những ai biết kết hợp học hỏi vào kinh nghiệm sẽ trở thành những kỹ sư vô cùng mạnh mẽ.
+Trong các bản tin email trước, tôi cũng đã viết: "Nhà lãnh đạo thời Showa dựa vào quyền uy, nhà lãnh đạo thời Reiwa dựa vào thiện ý". Điều quan trọng không phải là dùng chức vụ để bắt người khác hành động, mà là trở thành người khiến đối phương nghĩ rằng "Nếu là vì người này thì mình sẽ hành động".
 
-Mong rằng vài năm sau, chúng ta có thể tự hào nói rằng: "Tôi của hiện tại không còn là tôi của ngày xưa."
+◆ Quyền lực thông tin
+
+Đây là sức mạnh khiến người khác nghĩ rằng "Hỏi người này sẽ lấy được thông tin cần thiết". Ở công trường xây dựng, người càng nắm nhiều thông tin thì càng dễ tiến hành công việc.
+
+・ Chủ đầu tư đang coi trọng điều gì
+・ Những mục nào có khả năng sẽ thay đổi thiết kế
+・ Các công ty hợp tác đang gặp khó khăn gì
+・ Các công trường khác đang sử dụng phương pháp thi công mới nào
+・ Công ty sắp tới dự định tập trung vào lĩnh vực nào
+
+Những kỹ sư có thể thu thập thông tin như vậy và cung cấp cho người cần thiết sẽ tự nhiên thu hút mọi người xung quanh. Điều đặc biệt quan trọng không phải là độc chiếm thông tin, mà là suy nghĩ: "Thông tin này nên truyền đạt cho anh ○○ thì tốt hơn", để trở thành người kết nối giữa các bộ phận, công trường và các công ty hợp tác.
+
+◆ Chỉ làm tốt công việc thôi thì tiếng nói không thể tăng lên
+
+Và điều thú vị là "Làm việc giỏi" và "Có tiếng nói" không nhất thiết phải giống nhau. Dù bạn có làm tốt công việc đến đâu, nhưng nếu mọi người xung quanh không biết "Bạn đã làm gì", "Bạn đã sáng tạo ra sao", "Kết quả đạt được là gì" thì cũng khó được đánh giá cao.
+
+Ví dụ, nếu nhân viên trẻ ứng dụng ICT để giảm một nửa thời gian đo đạc, thay vì chỉ dừng lại ở mức "Tôi đã sử dụng ICT", họ nên báo cáo kèm theo con số cụ thể: "Trước đây cần 2 người mất 4 tiếng để đo đạc, nhưng nhờ ứng dụng ICT, thời gian đã rút ngắn xuống còn 1 người trong 2 tiếng".
+
+Đây không phải là khoe khoang. Đó là kỹ thuật truyền đạt những sáng tạo và kết quả bản thân đã làm sao cho đối phương dễ hiểu. Chỉ với suy nghĩ "Nếu làm tốt công việc thì thế nào cũng có ai đó nhìn nhận" là chưa đủ.
+
+Nâng cao chuyên môn. Hành động để nhận được sự tin tưởng. Trở thành người thu hút thông tin. Và truyền đạt rõ ràng thành quả của mình. Đối với kỹ sư trẻ, không chỉ kỹ năng kỹ thuật, chúng ta còn cần dạy cho họ cả "Năng lực thúc đẩy người xung quanh" như thế này.
+
+Cùng với việc "Nói cái gì" thì "Ai nói" cũng rất quan trọng. Thay vì đợi đến khi lên chức mới có tiếng nói, chúng ta hãy hướng tới trở thành những kỹ sư xây dựng ngay từ khi còn trẻ đã được mọi người nói rằng: "Nếu là lời anh ấy nói thì hãy lắng nghe xem sao".

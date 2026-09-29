@@ -1287,3 +1287,38 @@ if (themeTitle) {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+document.addEventListener('DOMContentLoaded', () => {
+  // 画像が画面に入ったら、1枚ずつ表示する
+  const comicImages = document.querySelectorAll('.comic-image');
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12 });
+
+    comicImages.forEach((image) => observer.observe(image));
+  } else {
+    comicImages.forEach((image) => image.classList.add('is-visible'));
+  }
+
+  // どれかの音声が再生中なら、ヘッダーの波形を動かす
+  const audios = document.querySelectorAll('.audio-source');
+
+  const updateWave = () => {
+    const isPlaying = [...audios].some(
+      (audio) => !audio.paused && !audio.ended
+    );
+    document.body.classList.toggle('is-audio-playing', isPlaying);
+  };
+
+  audios.forEach((audio) => {
+    audio.addEventListener('play', updateWave);
+    audio.addEventListener('pause', updateWave);
+    audio.addEventListener('ended', updateWave);
+  });
+});
