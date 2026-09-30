@@ -49,11 +49,11 @@ async function init() {
     catch { box.textContent = '原稿を読み込めませんでした'; }
   });
 
-    /* ========================================
-     言語切替
-     PC：従来のタブ切替
-     スマホ：3言語を横スクロール
-  ======================================== */
+  /* ========================================
+   言語切替
+   PC：従来のタブ切替
+   スマホ：3言語を横スクロール
+======================================== */
 
   const buttons = Array.from(
     document.querySelectorAll('.tab-button')
@@ -64,7 +64,7 @@ async function init() {
   );
 
   const contentCard =
-  document.querySelector('.language-slider');
+    document.querySelector('.language-slider');
 
   const mobileQuery =
     window.matchMedia('(max-width: 640px)');
@@ -1517,9 +1517,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (manual || reduced.matches || document.hidden) return;
 
+    let autoMoves = 0;
+
     timer = setInterval(() => {
-      if (startX === null) move(position + 1);
-    }, 3000);
+      if (startX !== null || busy) return;
+
+      move(position + 1);
+      autoMoves++;
+
+      // 1 → 2 → 3 → 1 を2周したら停止
+      if (autoMoves >= 6) {
+        stopAuto();
+      }
+    }, 5000);
   }
 
   track.addEventListener('transitionend', event => {
@@ -1607,3 +1617,61 @@ document.addEventListener('DOMContentLoaded', () => {
   render();
   startAuto();
 });
+
+// キャラクター：普段はぷかぷか、30秒ごとに手振りとウインク
+(() => {
+  function initRadioCharacter() {
+    const character = document.querySelector('.radio-character');
+    if (!character || character.dataset.animationReady) return;
+    character.dataset.animationReady = 'true';
+    const hand = character.querySelector('.radio-hand');
+    const wink = character.querySelector('.radio-wink');
+    if (!hand || !wink || !character.animate) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let idle = null, timer = null, greeting = [];
+    const interval = 30000;
+    function stopGreeting() { greeting.forEach(a => a.cancel()); greeting = []; }
+    function greet() {
+      if (reduced.matches || document.hidden) return;
+      stopGreeting();
+      greeting = [
+        hand.animate([
+          { transform: 'rotate(0deg)' },
+          { transform: 'rotate(-7deg)', offset: .18 },
+          { transform: 'rotate(6deg)', offset: .36 },
+          { transform: 'rotate(-7deg)', offset: .54 },
+          { transform: 'rotate(6deg)', offset: .72 },
+          { transform: 'rotate(0deg)' }
+        ], { duration: 1900, easing: 'ease-in-out' }),
+        wink.animate([
+          { opacity: 0, offset: 0 }, { opacity: 0, offset: .72 },
+          { opacity: 1, offset: .78 }, { opacity: 1, offset: .91 },
+          { opacity: 0, offset: 1 }
+        ], { duration: 2550 })
+      ];
+    }
+    function start() {
+      clearTimeout(timer); idle?.cancel(); idle = null;
+      if (document.hidden || reduced.matches) { stopGreeting(); return; }
+      idle = character.animate([
+        { transform: 'translateY(0) rotate(-.5deg)' },
+        { transform: 'translateY(-3px) rotate(.5deg)' },
+        { transform: 'translateY(0) rotate(-.5deg)' }
+      ], { duration: 5000, iterations: Infinity, easing: 'ease-in-out' });
+      schedule();
+    }
+    function schedule() {
+      clearTimeout(timer);
+      if (!document.hidden && !reduced.matches) {
+        timer = setTimeout(() => { greet(); schedule(); }, interval);
+      }
+    }
+    character.addEventListener('click', () => { greet(); schedule(); });
+    document.addEventListener('visibilitychange', start);
+    reduced.addEventListener('change', start);
+    start();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initRadioCharacter, { once: true });
+  } else { initRadioCharacter(); }
+})();
