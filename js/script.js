@@ -1322,3 +1322,288 @@ document.addEventListener('DOMContentLoaded', () => {
     audio.addEventListener('ended', updateWave);
   });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  const card = document.getElementById('audio-area');
+  const comics = document.querySelector('.comic-section');
+
+  if (!card || !comics) return;
+
+  document.body.classList.add('white-mist');
+
+  // 「音声はこちら」を削除
+  document.querySelector('.audio-guide')?.remove();
+
+  // 原稿を共通枠の外へ移動
+  const transcripts = document.createElement('section');
+  transcripts.className = 'mist-transcripts';
+
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    const details = panel.querySelector('details');
+    if (!details) return;
+
+    const block = details.closest('.section-block');
+
+    block.dataset.transcriptLanguage = panel.dataset.panel;
+    block.hidden = panel.dataset.panel !== 'ja';
+
+    transcripts.append(block);
+  });
+
+  card.after(transcripts);
+
+  // 選択中の言語に合わせて原稿も切り替える
+  document.addEventListener('languageTabChanged', event => {
+    transcripts
+      .querySelectorAll('[data-transcript-language]')
+      .forEach(block => {
+        block.hidden =
+          block.dataset.transcriptLanguage !== event.detail.language;
+      });
+  });
+
+  // 再生時間をシークバーの下へ移動
+  card.querySelectorAll('.custom-player').forEach(player => {
+    player.querySelector('.seek-bar').after(
+      player.querySelector('.player-time')
+    );
+  });
+
+  // 今ある3枚の画像を使用
+  const images = [...comics.querySelectorAll('img')];
+  if (images.length !== 3) return;
+
+  // 言語選択の直下へ移動
+  card.querySelector('.tabs').after(comics);
+
+  comics.className = 'mist-carousel';
+  comics.setAttribute('aria-label', '今回のテーマの画像');
+
+  comics.innerHTML = `
+    <div class="mist-viewport">
+      <div class="mist-track"></div>
+    </div>
+
+    <button
+      type="button"
+      class="mist-arrow mist-prev"
+      aria-label="前の画像"
+    >‹</button>
+
+    <button
+      type="button"
+      class="mist-arrow mist-next"
+      aria-label="次の画像"
+    >›</button>
+
+    <div class="mist-pagination">
+      <div class="mist-dots"></div>
+      <span class="mist-count"></span>
+    </div>
+  `;
+
+  const viewport = comics.querySelector('.mist-viewport');
+  const track = comics.querySelector('.mist-track');
+
+  // 両端はループ用の複製
+  // 初期表示：左に3、中央に1、右に2
+  [2, 0, 1, 2, 0].forEach((number, position) => {
+    const slide = document.createElement('div');
+
+    slide.className = 'mist-slide';
+    slide.append(images[number].cloneNode(true));
+    slide.setAttribute('aria-hidden', String(position !== 1));
+
+    track.append(slide);
+  });
+
+  const dots = images.map((image, number) => {
+    const button = document.createElement('button');
+
+    button.type = 'button';
+    button.setAttribute(
+      'aria-label',
+      `${number + 1}枚目を表示`
+    );
+
+    comics.querySelector('.mist-dots').append(button);
+
+    return button;
+  });
+
+  let position = 1;
+  let busy = false;
+  let timer;
+  let manual = false;
+  let startX = null;
+  let finishTimer;
+
+  const reduced = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  );
+
+  function render(animate = false) {
+    const slideWidth =
+      track.firstElementChild.getBoundingClientRect().width;
+
+    const gap = parseFloat(getComputedStyle(track).gap) || 0;
+
+    const offset =
+      viewport.clientWidth / 2 -
+      slideWidth / 2 -
+      position * (slideWidth + gap);
+
+    track.style.transition =
+      animate && !reduced.matches
+        ? 'transform 450ms ease'
+        : 'none';
+
+    track.style.transform = `translateX(${offset}px)`;
+
+    const current = (position + 2) % 3;
+
+    dots.forEach((dot, number) => {
+      dot.classList.toggle('active', number === current);
+      dot.setAttribute(
+        'aria-current',
+        String(number === current)
+      );
+    });
+
+    [...track.children].forEach((slide, number) => {
+      slide.setAttribute(
+        'aria-hidden',
+        String(number !== position)
+      );
+    });
+
+    comics.querySelector('.mist-count').textContent =
+      `${current + 1} / 3`;
+  }
+
+  function finish() {
+    clearTimeout(finishTimer);
+
+    // 同じ画像の位置へ瞬時に戻し、ループをつなぐ
+    if (position === 4) position = 1;
+    if (position === 0) position = 3;
+
+    render();
+    busy = false;
+  }
+
+  function move(next) {
+    if (busy) return;
+
+    busy = true;
+    position = next;
+
+    render(true);
+
+    finishTimer = setTimeout(
+      finish,
+      reduced.matches ? 0 : 500
+    );
+  }
+
+  // 一度手動で操作したら自動再生を停止
+  function stopAuto() {
+    manual = true;
+    clearInterval(timer);
+  }
+
+  function startAuto() {
+    clearInterval(timer);
+
+    if (manual || reduced.matches || document.hidden) return;
+
+    timer = setInterval(() => {
+      if (startX === null) move(position + 1);
+    }, 3000);
+  }
+
+  track.addEventListener('transitionend', event => {
+    if (
+      event.target === track &&
+      event.propertyName === 'transform'
+    ) {
+      finish();
+    }
+  });
+
+  comics.querySelector('.mist-prev').addEventListener(
+    'click',
+    () => {
+      stopAuto();
+      move(position - 1);
+    }
+  );
+
+  comics.querySelector('.mist-next').addEventListener(
+    'click',
+    () => {
+      stopAuto();
+      move(position + 1);
+    }
+  );
+
+  dots.forEach((dot, number) => {
+    dot.addEventListener('click', () => {
+      stopAuto();
+      move(number + 1);
+    });
+  });
+
+  // スマホの横スワイプ
+  viewport.addEventListener('pointerdown', event => {
+    if (!event.isPrimary || event.button !== 0 || busy) return;
+
+    startX = event.clientX;
+    viewport.setPointerCapture(event.pointerId);
+  });
+
+  viewport.addEventListener('pointerup', event => {
+    if (startX === null) return;
+
+    const distance = event.clientX - startX;
+    startX = null;
+
+    if (Math.abs(distance) >= 35) {
+      stopAuto();
+      move(position + (distance < 0 ? 1 : -1));
+    }
+  });
+
+  viewport.addEventListener('pointercancel', () => {
+    startX = null;
+  });
+
+  // PCの横スクロール操作
+  viewport.addEventListener(
+    'wheel',
+    event => {
+      if (
+        Math.abs(event.deltaX) > Math.abs(event.deltaY) &&
+        Math.abs(event.deltaX) > 10
+      ) {
+        stopAuto();
+        move(position + (event.deltaX > 0 ? 1 : -1));
+      }
+    },
+    { passive: true }
+  );
+
+  viewport.addEventListener('dragstart', event => {
+    event.preventDefault();
+  });
+
+  new ResizeObserver(() => {
+    finish();
+  }).observe(viewport);
+
+  document.addEventListener('visibilitychange', startAuto);
+  reduced.addEventListener('change', startAuto);
+
+  render();
+  startAuto();
+});
