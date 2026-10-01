@@ -3101,8 +3101,7 @@ body.white-mist {
 
 /* 原稿：表示範囲を固定して、中だけスクロール */
 .white-mist .mist-transcripts .script-box {
-  max-height: 600px;
-  max-height: min(600px, 62svh);
+  max-height: calc(100svh - 70px);
   overflow-y: auto;
   overflow-x: hidden;
 
@@ -3132,3 +3131,4 @@ body.white-mist {
     padding: 24px 12px 32px;
   }
 }
+
