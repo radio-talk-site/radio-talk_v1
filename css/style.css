@@ -3072,3 +3072,24 @@ body.white-mist {
 @media (prefers-reduced-motion: reduce) {
   .hero .radio-character { animation: none !important; transform: none !important; }
 }
+
+/* 背景：淡い水色とミントの曲線 */
+body.white-mist {
+  background-color: #f8fcff;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1440' height='1200' viewBox='0 0 1440 1200'%3E%3Cpath d='M-240 20 C200 -160 620 100 430 360 S-200 600 100 830' fill='none' stroke='%23d9f0ff' stroke-width='170' opacity='.75'/%3E%3Cpath d='M1530 100 C1120 360 1560 690 1140 930 S680 1080 620 1300' fill='none' stroke='%23d5f8ed' stroke-width='110' opacity='.8'/%3E%3C/svg%3E");
+
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+/* 枠の中は白く、影は柔らかく */
+.white-mist .theme-card,
+.white-mist .content-card,
+.white-mist .mist-transcripts {
+  background: #fff;
+  border-color: #d8eaf6;
+  box-shadow: 0 5px 18px rgba(72, 124, 161, .06);
+}
