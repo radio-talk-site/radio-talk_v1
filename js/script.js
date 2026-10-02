@@ -36,7 +36,7 @@ async function init() {
 
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
-        title: themeTitle,
+        title: themeTitle.replace(/[│｜|]/g, ' ').replace(/\s+/g, ' ').trim(),
         artist: 'ラジオトーク'
       });
     }
