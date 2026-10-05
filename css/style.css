@@ -3132,3 +3132,8 @@ body.white-mist {
   }
 }
 
+/* 組み替え前の画像と旧導線を表示しない */
+.white-mist .comic-section,
+.white-mist .audio-guide {
+  display: none;
+}
