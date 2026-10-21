@@ -8,7 +8,11 @@ function formatText(text) {
 
   for (const raw of lines) {
     const line = raw.trim();
-    if (!line) { closeList(); continue; }
+    if (!line) {
+      closeList();
+      html += '<div class="script-spacer" aria-hidden="true"></div>';
+      continue;
+    }
     if (line.startsWith('◆')) { closeList(); html += `<h4>${escapeHTML(line.slice(1).trim())}</h4>`; }
     else if (line.startsWith('■')) { closeList(); html += `<h5>${escapeHTML(line.slice(1).trim())}</h5>`; }
     else if (line.startsWith('・')) {

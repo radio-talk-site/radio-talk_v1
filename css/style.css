@@ -3197,3 +3197,24 @@ body.white-mist {
   .white-mist .hero, .white-mist .hero-inner { min-height: 210px; }
   .hajime-bubble { font-size: 12px; padding: 8px 12px; }
 }
+
+/* 音声の見出しと再生状態の高さを揃える */
+.player-header {
+    align-items: center;
+}
+
+.player-header .player-heading,
+.player-header .play-status {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* 通常の改行には余分な間隔をつけない */
+.script-box p {
+  margin: 0;
+}
+
+/* メモの空行を、約1行分の余白として表示 */
+.script-box .script-spacer {
+  height: 1.9em;
+}
