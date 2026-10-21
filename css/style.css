@@ -3137,3 +3137,63 @@ body.white-mist {
 .white-mist .audio-guide {
   display: none;
 }
+/* 初芽くんのタップ吹き出し：画面内に収まるようJSで位置調整 */
+.hajime-bubble {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(240px, calc(100vw - 24px));
+  padding: 12px 16px;
+  border: 1px solid #c5e2eb;
+  border-radius: 18px;
+  background: #fff;
+  color: #365e73;
+  box-shadow: 0 6px 22px rgb(47 91 113 / 13%);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.65;
+  text-align: center;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(5px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+.hajime-bubble::after {
+  content: '';
+  position: absolute;
+  left: var(--tail-left, 50%);
+  bottom: -6px;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border-right: 1px solid #c5e2eb;
+  border-bottom: 1px solid #c5e2eb;
+  transform: translateX(-50%) rotate(45deg);
+}
+.hajime-bubble.is-visible { opacity: 1; visibility: visible; transform: translateY(0); }
+@media (max-width: 640px) {
+  .hajime-bubble { max-width: min(210px, calc(100vw - 24px)); font-size: 13px; padding: 10px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hajime-bubble { transition: none; transform: none; }
+}
+
+/* 吹き出しを見出しの下・初芽くんの左側へ。しっぽは右向き */
+.hajime-bubble::after {
+  left: auto;
+  right: -6px;
+  top: 50%;
+  bottom: auto;
+  border: 0;
+  border-top: 1px solid #c5e2eb;
+  border-right: 1px solid #c5e2eb;
+  transform: translateY(-50%) rotate(45deg);
+}
+@media (max-width: 640px) {
+  .white-mist .hero, .white-mist .hero-inner { min-height: 210px; }
+  .hajime-bubble { font-size: 12px; padding: 8px 12px; }
+}

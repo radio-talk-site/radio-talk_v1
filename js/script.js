@@ -1666,7 +1666,63 @@ document.addEventListener('DOMContentLoaded', () => {
         timer = setTimeout(() => { greet(); schedule(); }, interval);
       }
     }
-    character.addEventListener('click', () => { greet(); schedule(); });
+    // セリフはここで編集できます（同じ番号が各言語で対応します）。
+    const messages = {
+      ja: ['今日もお疲れさまです！', 'ひと息ついていきませんか？', '今日もご安全に！', 'いいヒントが見つかるかも！', '開いてくれてありがとう！'],
+      vi: ['Bạn đã vất vả rồi!', 'Nghỉ một chút nhé?', 'Hãy làm việc an toàn nhé!', 'Hãy chọn chủ đề bạn quan tâm!', 'Cảm ơn bạn đã tìm thấy mình!'],
+      id: ['Terima kasih atas kerja kerasnya!', 'Istirahat sebentar, yuk!', 'Utamakan keselamatan kerja, ya!', 'Pilih topik yang menarik bagimu!', 'Terima kasih sudah menemukanku!']
+    };
+    const labels = { ja: '初芽くんをタップしてひとこと聞く', vi: 'Chạm để nghe lời chào từ Hajime', id: 'Ketuk untuk melihat sapaan Hajime' };
+    let language = document.querySelector('[data-tab].active')?.dataset.tab || 'ja';
+    let previous = -1, hideTimer = null;
+    const bubble = document.createElement('div');
+    bubble.className = 'hajime-bubble';
+    bubble.setAttribute('role', 'status');
+    bubble.setAttribute('aria-live', 'polite');
+    bubble.setAttribute('aria-atomic', 'true');
+    document.body.append(bubble);
+    function hideBubble() {
+      clearTimeout(hideTimer);
+      bubble.classList.remove('is-visible');
+      bubble.textContent = '';
+    }
+    function positionBubble() {
+      const rect = character.getBoundingClientRect();
+      const hero = character.closest('.hero-inner') || character.closest('.hero');
+      const bounds = hero.getBoundingClientRect();
+      const copy = hero.querySelector('.hero-copy');
+      const copyBottom = copy ? copy.getBoundingClientRect().bottom : bounds.top;
+      const minLeft = Math.max(12, bounds.left + 8);
+      const right = Math.min(window.innerWidth - 12, rect.left + rect.width * .12 - 12);
+      bubble.style.maxWidth = `${Math.max(80, Math.min(240, right - minLeft))}px`;
+      bubble.style.left = `${Math.max(minLeft, right - bubble.offsetWidth)}px`;
+      bubble.style.top = `${Math.max(copyBottom + 10, bounds.bottom - bubble.offsetHeight - 20)}px`;
+    }
+    function setLanguage(value) {
+      language = messages[value] ? value : 'ja';
+      character.setAttribute('aria-label', labels[language]);
+      bubble.lang = language;
+      hideBubble();
+    }
+    setLanguage(language);
+    character.addEventListener('click', () => {
+      greet(); schedule();
+      const choices = messages[language];
+      // 連続で同じセリフにはしない。最後のセリフは少し珍しい反応。
+      const pool = [0, 0, 1, 1, 2, 2, 3, 3, 4].filter(index => index !== previous);
+      previous = pool[Math.floor(Math.random() * pool.length)];
+      bubble.textContent = choices[previous];
+      bubble.classList.add('is-visible');
+      positionBubble();
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(hideBubble, 4200);
+    });
+    document.addEventListener('languageTabChanged', event => setLanguage(event.detail?.language));
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') hideBubble(); });
+    document.addEventListener('pointerdown', event => { if (!character.contains(event.target)) hideBubble(); });
+    window.addEventListener('scroll', hideBubble, { passive: true });
+    window.addEventListener('resize', hideBubble);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) hideBubble(); });
     document.addEventListener('visibilitychange', start);
     reduced.addEventListener('change', start);
     start();
@@ -1674,4 +1730,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initRadioCharacter, { once: true });
   } else { initRadioCharacter(); }
+})();
+
+// 初芽くんのセリフを10秒おきに自動表示
+(() => {
+  setInterval(() => {
+    if (document.hidden) return;
+
+    const character = document.querySelector('.radio-character');
+    if (!character) return;
+
+    // 初芽くんが画面内にいるときだけ表示
+    const rect = character.getBoundingClientRect();
+    if (rect.top < 0 || rect.bottom > window.innerHeight) return;
+
+    character.click();
+  }, 10000);
 })();
