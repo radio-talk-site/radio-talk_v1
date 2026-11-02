@@ -995,7 +995,7 @@ function initPlayButton() {
           localStorage.removeItem(positionKey);
         }
 
-        
+
       }
 
       updatePlayStatus();
@@ -1534,7 +1534,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let autoMoves = 0;
 
     timer = setInterval(() => {
-      if (startX !== null || busy) return;
+      if (startX !== null || busy || viewer.open) return;
 
       move(position + 1);
       autoMoves++;
@@ -1578,28 +1578,200 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // スマホの横スワイプ
+  // 画像の拡大表示
+  const viewer = document.createElement('dialog');
+  viewer.className = 'radio-image-viewer';
+  viewer.setAttribute('aria-label', '画像の拡大表示');
+
+  viewer.innerHTML = `
+    <div class="viewer-bar">
+      <button type="button" class="viewer-zoom"
+        aria-pressed="false">さらに拡大</button>
+      <button type="button" class="viewer-close"
+        aria-label="拡大表示を閉じる">× 閉じる</button>
+    </div>
+
+    <div class="viewer-stage">
+      <div class="viewer-picture">
+        <img alt="" draggable="false">
+      </div>
+    </div>
+
+    <div class="viewer-bottom">
+      <button type="button" class="viewer-prev"
+        aria-label="前の画像">‹</button>
+      <span class="viewer-count" aria-live="polite"></span>
+      <button type="button" class="viewer-next"
+        aria-label="次の画像">›</button>
+    </div>
+  `;
+
+  document.body.append(viewer);
+
+  const stage = viewer.querySelector('.viewer-stage');
+  const largeImage = viewer.querySelector('img');
+  const zoomButton = viewer.querySelector('.viewer-zoom');
+
+  let viewingIndex = 0;
+  let oldOverflow = '';
+
+  function showLargeImage(number) {
+    viewingIndex = (number + images.length) % images.length;
+
+    const source = images[viewingIndex];
+    largeImage.src = source.currentSrc || source.src;
+    largeImage.alt = source.alt;
+
+    stage.classList.remove('is-zoomed');
+    zoomButton.textContent = 'さらに拡大';
+    zoomButton.setAttribute('aria-pressed', 'false');
+    stage.scrollTo(0, 0);
+
+    viewer.querySelector('.viewer-count').textContent =
+      `${viewingIndex + 1} / ${images.length}`;
+  }
+
+  function openImage(number) {
+    if (viewer.open) return;
+
+    showLargeImage(number);
+    oldOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    viewer.showModal();
+    viewer.querySelector('.viewer-close').focus();
+  }
+
+  viewer.querySelector('.viewer-close').onclick = () => {
+    viewer.close();
+  };
+
+  viewer.addEventListener('close', () => {
+    document.documentElement.style.overflow = oldOverflow;
+    viewport.focus({ preventScroll: true });
+  });
+
+  viewer.querySelector('.viewer-prev').onclick = () => {
+    showLargeImage(viewingIndex - 1);
+  };
+
+  viewer.querySelector('.viewer-next').onclick = () => {
+    showLargeImage(viewingIndex + 1);
+  };
+
+  zoomButton.onclick = () => {
+    const zoomed = stage.classList.toggle('is-zoomed');
+    zoomButton.textContent = zoomed ? '全体を表示' : 'さらに拡大';
+    zoomButton.setAttribute('aria-pressed', String(zoomed));
+    stage.scrollTo(0, 0);
+  };
+
+  // PCではキーボードでも操作可能
+  viewport.tabIndex = 0;
+  viewport.setAttribute('role', 'button');
+  viewport.setAttribute('aria-label', '画像を拡大表示');
+
+  viewport.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openImage((position + 2) % 3);
+    }
+  });
+
+  viewer.addEventListener('keydown', event => {
+    if (event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight') {
+      event.preventDefault();
+      showLargeImage(
+        viewingIndex + (event.key === 'ArrowRight' ? 1 : -1)
+      );
+    }
+  });
+
+  // 拡大画面の横スワイプ
+  // 「さらに拡大」中は、画像を指で移動する操作を優先
+  let largeTouch = null;
+
+  stage.addEventListener('touchstart', event => {
+    largeTouch =
+      event.touches.length === 1 &&
+        !stage.classList.contains('is-zoomed')
+        ? {
+          x: event.touches[0].clientX,
+          y: event.touches[0].clientY
+        }
+        : null;
+  }, { passive: true });
+
+  stage.addEventListener('touchend', event => {
+    if (!largeTouch) return;
+
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - largeTouch.x;
+    const dy = touch.clientY - largeTouch.y;
+    largeTouch = null;
+
+    if ((window.visualViewport?.scale || 1) > 1.05) return;
+
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      showLargeImage(viewingIndex + (dx < 0 ? 1 : -1));
+    }
+  }, { passive: true });
+
+  stage.addEventListener('touchcancel', () => {
+    largeTouch = null;
+  });
+
+  // 通常画面：横スワイプとタップを判別
+  let startY = null;
+  let tappedImage = null;
+
   viewport.addEventListener('pointerdown', event => {
-    if (!event.isPrimary || event.button !== 0 || busy) return;
+    if (!event.isPrimary) {
+      startX = null;
+      tappedImage = null;
+      return;
+    }
+    if (event.button !== 0 || busy) return;
 
     startX = event.clientX;
+    startY = event.clientY;
+    tappedImage = event.target.closest('.mist-slide img');
     viewport.setPointerCapture(event.pointerId);
   });
 
   viewport.addEventListener('pointerup', event => {
     if (startX === null) return;
 
-    const distance = event.clientX - startX;
-    startX = null;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    const selectedImage = tappedImage;
 
-    if (Math.abs(distance) >= 35) {
+    startX = null;
+    tappedImage = null;
+
+    if (viewport.hasPointerCapture(event.pointerId)) {
+      viewport.releasePointerCapture(event.pointerId);
+    }
+
+    if (Math.abs(dx) >= 35 && Math.abs(dx) > Math.abs(dy)) {
       stopAuto();
-      move(position + (distance < 0 ? 1 : -1));
+      move(position + (dx < 0 ? 1 : -1));
+    } else if (
+      Math.abs(dx) < 10 &&
+      Math.abs(dy) < 10 &&
+      selectedImage
+    ) {
+      const slideNumber = [...track.children].indexOf(
+        selectedImage.closest('.mist-slide')
+      );
+
+      openImage([2, 0, 1, 2, 0][slideNumber]);
     }
   });
 
   viewport.addEventListener('pointercancel', () => {
     startX = null;
+    tappedImage = null;
   });
 
   // PCの横スクロール操作
