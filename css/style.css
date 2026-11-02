@@ -3332,3 +3332,58 @@ dialog.radio-image-viewer {
     scroll-behavior: auto;
   }
 }
+
+/* 元のページをぼかして透かす */
+dialog.radio-image-viewer {
+  background: transparent;
+  color: #243746;
+}
+
+dialog.radio-image-viewer::backdrop {
+  background: rgba(255, 255, 255, 0.35);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* 操作ボタンを明るい見た目に */
+.radio-image-viewer button {
+  background: rgba(255, 255, 255, 0.9);
+  color: #243746;
+  border: 1px solid rgba(36, 55, 70, 0.15);
+  box-shadow: 0 2px 12px rgba(36, 55, 70, 0.1);
+}
+
+/* 閉じるボタンは丸い× */
+.radio-image-viewer .viewer-close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 30px;
+  line-height: 1;
+}
+
+/* 画像の左右にも余白を作る */
+.radio-image-viewer .viewer-picture {
+  padding: 24px 12px;
+}
+
+.radio-image-viewer .viewer-picture img {
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(36, 55, 70, 0.15);
+}
+
+/* 枚数表示も読みやすく */
+.radio-image-viewer .viewer-count {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* 横スライド中の画像を表示枠の内側に収める */
+.radio-image-viewer .viewer-picture {
+  position: relative;
+  overflow: hidden;
+}

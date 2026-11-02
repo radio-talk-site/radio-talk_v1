@@ -1616,7 +1616,50 @@ document.addEventListener('DOMContentLoaded', () => {
   let oldOverflow = '';
 
   function showLargeImage(number) {
-    viewingIndex = (number + images.length) % images.length;
+    const nextIndex =
+      (number + images.length) % images.length;
+
+    const direction = number > viewingIndex ? 1 : -1;
+    const picture = viewer.querySelector('.viewer-picture');
+
+    // 前のアニメーションが残っていたら整理
+    largeImage.getAnimations().forEach(animation => {
+      animation.cancel();
+    });
+    picture.querySelectorAll('.viewer-old-image').forEach(
+      image => image.remove()
+    );
+
+    const animate =
+      viewer.open &&
+      nextIndex !== viewingIndex &&
+      !reduced.matches;
+
+    // 現在の画像を、退出する画像として一時的に残す
+    let oldImage = null;
+
+    if (animate) {
+      const imageRect = largeImage.getBoundingClientRect();
+      const pictureRect = picture.getBoundingClientRect();
+
+      oldImage = largeImage.cloneNode(true);
+      oldImage.className = 'viewer-old-image';
+      oldImage.alt = '';
+      oldImage.setAttribute('aria-hidden', 'true');
+
+      Object.assign(oldImage.style, {
+        position: 'absolute',
+        left: `${imageRect.left - pictureRect.left}px`,
+        top: `${imageRect.top - pictureRect.top}px`,
+        width: `${imageRect.width}px`,
+        height: `${imageRect.height}px`,
+        pointerEvents: 'none'
+      });
+
+      picture.append(oldImage);
+    }
+
+    viewingIndex = nextIndex;
 
     const source = images[viewingIndex];
     largeImage.src = source.currentSrc || source.src;
@@ -1625,10 +1668,47 @@ document.addEventListener('DOMContentLoaded', () => {
     stage.classList.remove('is-zoomed');
     zoomButton.textContent = 'さらに拡大';
     zoomButton.setAttribute('aria-pressed', 'false');
-    stage.scrollTo(0, 0);
+
+    // 切り替え時は表示位置をすぐにリセット
+    stage.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant'
+    });
 
     viewer.querySelector('.viewer-count').textContent =
       `${viewingIndex + 1} / ${images.length}`;
+
+    if (!animate) return;
+
+    const settings = {
+      duration: 450,
+      easing: 'ease'
+    };
+
+    // 次の画像が横から入る
+    largeImage.animate(
+      [
+        { transform: `translateX(${direction * 110}%)` },
+        { transform: 'translateX(0)' }
+      ],
+      settings
+    );
+
+    // 元の画像が反対側へ抜ける
+    const outgoing = oldImage.animate(
+      [
+        { transform: 'translateX(0)', opacity: 1 },
+        {
+          transform: `translateX(${-direction * 110}%)`,
+          opacity: 0
+        }
+      ],
+      settings
+    );
+
+    outgoing.onfinish = () => oldImage.remove();
+    outgoing.oncancel = () => oldImage.remove();
   }
 
   function openImage(number) {
