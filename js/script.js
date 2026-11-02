@@ -519,14 +519,100 @@ function initPlayButton() {
   let activePlayButton = null;
   let activeTexts = null;
 
-  let hasSentAudioStart = false;
+  // 最初に実際に再生した言語だけを集計する
+  // ページを再読み込みすると計測はリセットされる
+  const analyticsAudios = [
+    ...document.querySelectorAll('.audio-source')
+  ];
 
-  let playbackMilestones = {
-    25: false,
-    50: false,
-    75: false,
-    95: false
-  };
+  let trackedAudio = null;
+  let sentStart = false;
+  const sentMilestones = new Set();
+
+  const analyticsMilestones = [
+    [25, 'audio_25'],
+    [50, 'audio_50'],
+    [75, 'audio_75'],
+    [95, 'audio_complete']
+  ];
+
+  function sendAudioEvent(audio, eventName) {
+    // Live Serverなど、公開サイト以外からは送信しない
+    if (
+      location.hostname !== 'radio-talk-site.github.io' ||
+      typeof gtag !== 'function'
+    ) {
+      return false;
+    }
+
+    gtag('event', eventName, {
+      episode_id: episodeId,
+      audio_language: audio.dataset.language,
+      send_to: 'G-PGVD9L27LG'
+    });
+
+    return true;
+  }
+
+  function reportAudioProgress(audio) {
+    if (audio !== trackedAudio) return;
+
+    if (!sentStart) {
+      sentStart = sendAudioEvent(audio, 'audio_start');
+    }
+
+    if (
+      !sentStart ||
+      !Number.isFinite(audio.duration) ||
+      audio.duration <= 0
+    ) {
+      return;
+    }
+
+    // 実際に再生した範囲だけを集計する
+    // 早送りで飛ばした範囲や、同じ範囲の繰り返しは加算しない
+    let playedSeconds = 0;
+    const ranges = audio.played;
+
+    for (let i = 0; i < ranges.length; i++) {
+      const start = Math.max(0, ranges.start(i));
+      const end = Math.min(audio.duration, ranges.end(i));
+
+      playedSeconds += Math.max(0, end - start);
+    }
+
+    const percent = Math.min(
+      100,
+      playedSeconds / audio.duration * 100
+    );
+
+    for (const [threshold, eventName] of analyticsMilestones) {
+      if (
+        percent >= threshold &&
+        !sentMilestones.has(threshold) &&
+        sendAudioEvent(audio, eventName)
+      ) {
+        sentMilestones.add(threshold);
+      }
+    }
+  }
+
+  analyticsAudios.forEach(audio => {
+    // 通常・ミニプレーヤーの両方に対応
+    audio.addEventListener('playing', () => {
+      if (!trackedAudio) {
+        trackedAudio = audio;
+      }
+
+      reportAudioProgress(audio);
+    });
+
+    ['timeupdate', 'pause', 'ended', 'seeked'].forEach(eventName => {
+      audio.addEventListener(eventName, () => {
+        reportAudioProgress(audio);
+      });
+    });
+  });
 
   const players = document.querySelectorAll('.custom-player');
 
@@ -701,28 +787,6 @@ function initPlayButton() {
           activePlayButton = playButton;
           activeTexts = texts;
 
-          if (
-            !hasSentAudioStart &&
-            typeof gtag === 'function'
-          ) {
-            console.log('audio_start送信', language);
-
-            gtag('event', 'audio_start', {
-              episode_id: episodeId,
-              audio_language: language,
-              send_to: 'G-PGVD9L27LG'
-            });
-
-            hasSentAudioStart = true;
-
-            playbackMilestones = {
-              25: false,
-              50: false,
-              75: false,
-              95: false
-            };
-
-          }
 
           miniPlayer.hidden = false;
 
@@ -931,61 +995,7 @@ function initPlayButton() {
           localStorage.removeItem(positionKey);
         }
 
-        if (
-          progressPercent >= 25 &&
-          !playbackMilestones[25] &&
-          typeof gtag === 'function'
-        ) {
-          playbackMilestones[25] = true;
-
-          console.log('25%到達', progressPercent);
-
-          gtag('event', 'audio_25', {
-            episode_id: episodeId,
-            audio_language: language
-          });
-        }
-
-        if (
-          progressPercent >= 50 &&
-          !playbackMilestones[50] &&
-          typeof gtag === 'function'
-        ) {
-          playbackMilestones[50] = true;
-
-          gtag('event', 'audio_50', {
-            episode_id: episodeId,
-            audio_language: language
-          });
-        }
-
-        if (
-          progressPercent >= 75 &&
-          !playbackMilestones[75] &&
-          typeof gtag === 'function'
-        ) {
-          playbackMilestones[75] = true;
-
-          gtag('event', 'audio_75', {
-            episode_id: episodeId,
-            audio_language: language
-          });
-        }
-
-        if (
-          progressPercent >= 95 &&
-          !playbackMilestones[95] &&
-          typeof gtag === 'function'
-        ) {
-          playbackMilestones[95] = true;
-
-          console.log('95%到達', progressPercent);
-
-          gtag('event', 'audio_complete', {
-            episode_id: episodeId,
-            audio_language: language
-          });
-        }
+        
       }
 
       updatePlayStatus();
