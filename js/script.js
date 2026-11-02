@@ -1606,7 +1606,10 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   `;
 
-    // 閉じるボタンの表示を「×」だけにする
+      // 拡大画面をページに追加
+  document.body.append(viewer);
+
+  // 閉じるボタンの表示を「×」だけにする
   viewer.querySelector('.viewer-close').textContent = '×';
 
   const stage = viewer.querySelector('.viewer-stage');
