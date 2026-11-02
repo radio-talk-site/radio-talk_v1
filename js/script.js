@@ -1645,6 +1645,47 @@ document.addEventListener('DOMContentLoaded', () => {
     viewer.close();
   };
 
+  // 画像・ボタン以外の余白をタップすると閉じる
+  // スクロール操作では閉じないように判別
+  let outsideTap = null;
+
+  viewer.addEventListener('pointerdown', event => {
+    if (!event.isPrimary || event.button !== 0) {
+      outsideTap = null;
+      return;
+    }
+
+    if (event.target.closest('img, button')) {
+      outsideTap = null;
+      return;
+    }
+
+    outsideTap = {
+      x: event.clientX,
+      y: event.clientY
+    };
+  });
+
+  viewer.addEventListener('pointerup', event => {
+    if (!outsideTap) return;
+
+    const dx = event.clientX - outsideTap.x;
+    const dy = event.clientY - outsideTap.y;
+    outsideTap = null;
+
+    if (
+      Math.abs(dx) < 10 &&
+      Math.abs(dy) < 10 &&
+      !event.target.closest('img, button')
+    ) {
+      viewer.close();
+    }
+  });
+
+  viewer.addEventListener('pointercancel', () => {
+    outsideTap = null;
+  });
+
   viewer.addEventListener('close', () => {
     document.documentElement.style.overflow = oldOverflow;
     viewport.focus({ preventScroll: true });
