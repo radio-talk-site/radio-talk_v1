@@ -1606,7 +1606,8 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   `;
 
-  document.body.append(viewer);
+    // 閉じるボタンの表示を「×」だけにする
+  viewer.querySelector('.viewer-close').textContent = '×';
 
   const stage = viewer.querySelector('.viewer-stage');
   const largeImage = viewer.querySelector('img');

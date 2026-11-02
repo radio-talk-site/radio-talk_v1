@@ -3387,3 +3387,50 @@ dialog.radio-image-viewer::backdrop {
   position: relative;
   overflow: hidden;
 }
+
+/* 拡大ボタン・左右の矢印を非表示 */
+.radio-image-viewer .viewer-zoom,
+.radio-image-viewer .viewer-prev,
+.radio-image-viewer .viewer-next {
+  display: none;
+}
+
+/* ×を右上に配置 */
+.radio-image-viewer .viewer-bar {
+  justify-content: flex-end;
+}
+
+/* 枠や背景のない、×だけの表示 */
+.radio-image-viewer .viewer-close {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #243746;
+  font-size: 32px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.radio-image-viewer .viewer-close:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* 下部は枚数だけを中央に表示 */
+.radio-image-viewer .viewer-bottom {
+  justify-content: center;
+  gap: 0;
+}
+
+/* 指２本での拡大操作を許可 */
+.radio-image-viewer .viewer-stage {
+  touch-action: pan-y pinch-zoom;
+}
