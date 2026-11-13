@@ -1383,6 +1383,9 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
+  // 動画版でも同じ位置に表示する（画像版のスライダーも引き続き対応）
+  card.querySelector('.tabs').after(comics);
+
   // 今ある3枚の画像を使用
   const images = [...comics.querySelectorAll('img')];
   if (images.length !== 3) return;
@@ -2058,3 +2061,181 @@ document.addEventListener('DOMContentLoaded', () => {
     character.click();
   }, 10000);
 })();
+// YouTube動画。音声の集計とは独立。rt_video_* はGA4自動イベントと区別する。
+document.addEventListener('DOMContentLoaded', () => {
+  const mount = document.getElementById('radio-video');
+  if (!mount) return;
+  const videoId = mount.dataset.youtubeId;
+  const language = mount.dataset.language || 'ja';
+  const episode = document.body.dataset.episodeId;
+  const section = mount.closest('.radio-video-section');
+  const stage = document.getElementById('radio-video-stage');
+  const expand = document.getElementById('video-expand');
+  const close = stage.querySelector('.video-close');
+  const message = section.querySelector('.video-message');
+  const skips = [...section.querySelectorAll('[data-video-skip]')];
+  const speed = document.getElementById('video-speed');
+  const audios = [...document.querySelectorAll('.audio-source')];
+  const key = `radio-youtube-${episode}-${videoId}-position`;
+  let player, ready = false, state = -1, last = null, lastWall = 0, timer;
+  let ranges = [], saved = 0, lastSave = 0;
+  const sent = new Set();
+  const tell = text => { message.textContent = text; message.hidden = !text; };
+  try { saved = Math.max(0, Number(localStorage.getItem(key)) || 0); } catch {}
+  function send(name, percent = 0) {
+    if (sent.has(name)) return;
+    sent.add(name);
+    const params = { episode_id: episode, video_language: language,
+      video_id: videoId, video_file: `youtube:${videoId}`, video_provider: 'youtube',
+      video_url: `https://www.youtube.com/watch?v=${videoId}`,
+      video_percent: percent, send_to: 'G-PGVD9L27LG' };
+    if (location.hostname === 'radio-talk-site.github.io' && typeof gtag === 'function') {
+      gtag('event', name, params);
+    } else {
+      console.info('[動画計測テスト・GA4送信なし]', name, params);
+    }
+  }
+  // YouTubeにはplayedがないため、短い間隔で実再生範囲を推定する。
+  // シークによる大きな飛びは除外。同じ範囲の再視聴は重複加算しない。
+  function sample() {
+    if (!ready) return;
+    const now = performance.now(), pos = player.getCurrentTime(), duration = player.getDuration();
+    if (state === 1 && last !== null) {
+      const delta = pos - last, wall = (now - lastWall) / 1000;
+      const expected = wall * player.getPlaybackRate();
+      if (wall > 0 && wall <= 2 && delta > 0 && delta <= expected + 0.35) {
+        ranges.push([Math.max(0, last), Math.min(duration, pos)]);
+        ranges.sort((a,b) => a[0]-b[0]);
+        const merged = [];
+        for (const range of ranges) {
+          const tail = merged[merged.length-1];
+          if (tail && range[0] <= tail[1]) tail[1] = Math.max(tail[1],range[1]);
+          else merged.push([...range]);
+        }
+        ranges = merged;
+        const percent = duration > 0 ? ranges.reduce((sum,r) => sum+r[1]-r[0],0)/duration*100 : 0;
+        for (const [threshold,name] of [[25,'rt_video_25'],[50,'rt_video_50'],[75,'rt_video_75'],[95,'rt_video_complete']]) {
+          if (percent >= threshold) send(name, threshold);
+        }
+      }
+    }
+    last = pos; lastWall = now;
+  }
+  function save() {
+    if (!ready) return;
+    if (state === 1 && Date.now() - lastSave < 1500) return;
+    lastSave = Date.now();
+    try { localStorage.setItem(key, String(state === 0 ? 0 : player.getCurrentTime())); } catch {}
+  }
+  function rates() {
+    const available = player.getAvailablePlaybackRates();
+    speed.replaceChildren(...available.map(rate => {
+      const option = document.createElement('option');
+      option.value = String(rate); option.textContent = `${rate}倍`; return option;
+    }));
+    speed.value = String(player.getPlaybackRate());
+    speed.disabled = available.length < 2;
+  }
+  function init() {
+    if (player) return;
+    player = new YT.Player('radio-video', {
+      videoId, width: '100%', height: '428',
+      playerVars: { origin: location.origin, playsinline: 1, controls: 1, fs: 1, rel: 0, start: Math.floor(saved) },
+      events: {
+        onReady(event) {
+          player = event.target; ready = true; clearTimeout(loadTimeout);
+          player.getIframe().title = '今回のテーマの動画（日本語）';
+          player.getIframe().setAttribute('allowfullscreen','');
+          skips.forEach(b => { b.disabled = false; }); rates();
+          tell(saved > 0 ? '前回の続きから再生できます' : '');
+          timer = setInterval(() => { sample(); save(); }, 250);
+        },
+        onStateChange(event) {
+          sample(); state = event.data; last = null;
+          if (state === 1) {
+            audios.forEach(audio => audio.pause());
+            send('rt_video_start'); tell(''); sample(); rates();
+          } else if (state === 3) tell('動画を読み込んでいます…');
+          else tell('');
+          save();
+        },
+        onPlaybackRateChange() { last = null; rates(); },
+        onError(event) {
+          clearTimeout(loadTimeout); state = -1; last = null;
+          skips.forEach(b => { b.disabled = true; }); speed.disabled = true;
+          tell(`動画を読み込めませんでした（${event.data}）。限定公開・埋め込み許可の設定と接続を確認し、ページを再読み込みしてください。`);
+        }
+      }
+    });
+  }
+  skips.forEach(button => button.addEventListener('click', () => {
+    if (!ready) return;
+    sample(); last = null;
+    player.seekTo(Math.max(0, Math.min(player.getDuration(), player.getCurrentTime()+Number(button.dataset.videoSkip))),true);
+  }));
+  speed.addEventListener('change', () => { if (ready) { sample(); last = null; player.setPlaybackRate(Number(speed.value)); } });
+  audios.forEach(audio => {
+    audio.addEventListener('play', () => { if (ready) player.pauseVideo(); });
+    audio.addEventListener('pause', () => {
+      const button = audio.closest('.tab-panel')?.querySelector('.play-button');
+      button?.classList.remove('is-playing');
+      button?.setAttribute('aria-label', ({ja:'再生',vi:'Phát',id:'Putar'})[audio.dataset.language] || '再生');
+      if (audios.every(a => a.paused)) {
+        const mini = document.querySelector('.mini-play');
+        mini?.classList.remove('is-playing'); mini?.setAttribute('aria-label','再生');
+      }
+    });
+  });
+  let oldOverflow = '';
+  const syncFullscreen = () => {
+    const full = document.fullscreenElement === stage || stage.classList.contains('is-expanded');
+    close.hidden = !full; expand.setAttribute('aria-expanded',String(full));
+  };
+  expand.addEventListener('click', async () => {
+    if (stage.requestFullscreen) {
+      try { await stage.requestFullscreen(); syncFullscreen(); close.focus(); return; } catch {}
+    }
+    if (stage.classList.contains('is-expanded')) return;
+    oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden'; stage.classList.add('is-expanded');
+    stage.setAttribute('role','dialog'); stage.setAttribute('aria-modal','true');
+    stage.setAttribute('aria-label','動画の大画面表示'); syncFullscreen(); close.focus();
+  });
+  async function exit() {
+    if (document.fullscreenElement === stage) { try { await document.exitFullscreen(); } catch {} }
+    if (stage.classList.contains('is-expanded')) {
+      stage.classList.remove('is-expanded'); document.body.style.overflow = oldOverflow;
+      ['role','aria-modal','aria-label'].forEach(a => stage.removeAttribute(a));
+    }
+    syncFullscreen(); expand.focus();
+  }
+  close.addEventListener('click',exit);
+  document.addEventListener('fullscreenchange',syncFullscreen);
+  document.addEventListener('keydown',event => {
+    if (!stage.classList.contains('is-expanded')) return;
+    if (event.key === 'Escape') { event.preventDefault(); exit(); }
+    if (event.key === 'Tab' && !event.shiftKey && document.activeElement === close) {
+      event.preventDefault(); document.getElementById('radio-video').focus();
+    }
+  });
+  window.addEventListener('pagehide', () => { sample(); save(); clearInterval(timer); });
+  window.addEventListener('pageshow',event => {
+    if (event.persisted && ready) { last = null; clearInterval(timer); timer = setInterval(() => { sample(); save(); },250); }
+  });
+  document.addEventListener('visibilitychange', () => { sample(); save(); last = null; });
+  const loadTimeout = setTimeout(() => tell('YouTubeの読み込みに時間がかかっています。接続を確認し、ページを再読み込みしてください。'),20000);
+  if (!/^https?:$/.test(location.protocol)) {
+    clearTimeout(loadTimeout); tell('VS CodeのLive Serverで開いてください（HTMLの直接起動ではYouTubeを再生できない場合があります）。'); return;
+  }
+  tell('動画を読み込んでいます…');
+  if (window.YT?.Player) init();
+  else {
+    const previous = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { if (typeof previous === 'function') previous(); init(); };
+    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+      const script = document.createElement('script'); script.src = 'https://www.youtube.com/iframe_api';
+      script.onerror = () => { clearTimeout(loadTimeout); tell('YouTubeに接続できません。接続を確認し、ページを再読み込みしてください。'); };
+      document.head.appendChild(script);
+    }
+  }
+});

@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="robots" content="noindex, nofollow">
     <title>ラジオトーク</title>
 
@@ -14,7 +15,7 @@
 
     <meta property="og:image" content="https://radio-talk-site.github.io/radio-talk_v1/images/ogp-013.png?v=2">
 
-    <link rel="stylesheet" href="css/style.css?v=20261102-zoom4">
+    <link rel="stylesheet" href="css/style.css?v=20261113-youtube1">
 
     <!-- Google Analytics：公開サイトでのみ集計 -->
     <script>
@@ -248,19 +249,23 @@
             <span class="audio-guide-arrow">↓</span>
         </a>
 
-        <section class="comic-section">
-            <div class="comic-image">
-                <img src="images/comic_01.png" alt="昨日の自分は、それでよかった。">
+        <!-- 動画の差し替え：data-youtube-id をYouTube動画IDに変更してください -->
+        <section class="comic-section radio-video-section" aria-label="今回のテーマの動画">
+            <div class="radio-video-heading"><h3>動画で見る</h3><span>日本語</span></div>
+            <div class="radio-video-stage" id="radio-video-stage">
+                <div id="radio-video" data-youtube-id="hVzj_WFUm_U" data-language="ja"></div>
+                <button type="button" class="video-close" hidden>大画面を閉じる</button>
             </div>
-
-            <div class="comic-image">
-                <img src="images/comic_02.png" alt="でも、環境は変わっている。">
+            <div class="radio-video-tools" aria-label="動画の操作">
+                <button type="button" data-video-skip="-10" disabled aria-label="動画を10秒戻す">−10秒</button>
+                <button type="button" data-video-skip="10" disabled aria-label="動画を10秒進める">＋10秒</button>
+                <label>再生速度 <select id="video-speed" disabled aria-label="動画の再生速度">
+                    <option value="1">1倍</option><option value="1.25">1.25倍</option>
+                    <option value="1.5">1.5倍</option><option value="2">2倍</option>
+                </select></label>
+                <button type="button" id="video-expand" aria-controls="radio-video-stage" aria-expanded="false">⛶ 大画面</button>
             </div>
-
-            <div class="comic-image">
-                <img src="images/comic_03.png" alt="昨日の自分より少し前へ。小さくアップデートしていく。">
-            </div>
-
+            <p class="video-message" role="status" hidden></p>
         </section>
 
         <section class="content-card" id="audio-area">
@@ -309,7 +314,7 @@
                     <section class="section-block">
 
                         <audio class="audio-source" data-language="ja" preload="metadata"
-                            src="audio/japanese_013.m4a?v=2">
+                            src="audio/japanese_07.m4a?v=2">
                         </audio>
 
                         <div class="custom-player" data-language="ja">
@@ -417,7 +422,7 @@
                     <section class="section-block">
 
                         <audio class="audio-source" data-language="vi" preload="metadata"
-                            src="audio/vietnamese_013.m4a?v=2">
+                            src="audio/vietnamese_07.m4a?v=2">
                         </audio>
 
                         <div class="custom-player" data-language="vi">
@@ -529,7 +534,7 @@
                     <section class="section-block">
 
                         <audio class="audio-source" data-language="id" preload="metadata"
-                            src="audio/indonesian_013.m4a?v=2">
+                            src="audio/indonesian_07.m4a?v=2">
                         </audio>
 
                         <div class="custom-player" data-language="id">
@@ -616,7 +621,7 @@
         </section>
     </main>
 
-    <script src="js/script.js?v=20261102-zoom4"></script>
+    <script src="js/script.js?v=20261113-youtube1"></script>
 </body>
 
 </html>
