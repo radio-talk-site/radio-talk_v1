@@ -3458,3 +3458,52 @@ dialog.radio-image-viewer::backdrop {
 #radio-video { border:0; min-height:200px; }
 .radio-video-stage:fullscreen,.radio-video-stage.is-expanded { flex-direction:column; padding:64px 0 12px; box-sizing:border-box; }
 .radio-video-stage:fullscreen #radio-video,.radio-video-stage.is-expanded #radio-video { flex:1; min-height:0; width:100%; }
+
+
+/* テーマの見出しを枠いっぱいに表示 */
+.white-mist .theme-card h2 {
+  max-width: none;
+  width: auto;
+}
+
+/* 動画の視聴案内 */
+.video-viewing-note {
+  margin: 0 0 12px;
+  color: #547391;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ヘッダーのロゴ */
+.white-mist .hero h1.radio-logo-heading {
+  margin: 0;
+  line-height: 0;
+}
+
+.white-mist .hero .radio-header-logo {
+  display: block;
+  width: 460px;
+  max-width: 100%;
+  height: auto;
+}
+
+.white-mist .hero .hero-copy p {
+  margin-top: 10px;
+}
+
+/* スマホ：キャラクターの横に収める */
+@media (max-width: 640px) {
+  .white-mist .hero-copy {
+    width: calc(100% - 120px);
+  }
+
+  .white-mist .hero .radio-header-logo {
+    width: 100%;
+    max-width: 270px;
+  }
+
+  .white-mist .hero .hero-copy p {
+    max-width: none;
+    margin-top: 8px;
+  }
+}

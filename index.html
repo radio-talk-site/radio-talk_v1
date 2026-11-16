@@ -11,7 +11,7 @@
     <!-- LINEなどで表示するリンクプレビュー -->
     <meta property="og:title" content="ラジオトーク">
 
-    <meta property="og:description" content="若手社員が自分で考えて動くようになるためには、どう対応するべきでしょうか。">
+    <meta property="og:description" content="現場の状況を具体的に伝える力を育むために、読書はどのように役立つのでしょうか。">
 
     <meta property="og:image" content="https://radio-talk-site.github.io/radio-talk_v1/images/ogp-013.png?v=2">
 
@@ -151,22 +151,10 @@
 
             <div class="hero-copy">
 
-                <div class="hero-brand">
-                    <div class="mic">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z"></path>
-                            <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
-                            <path d="M12 18v3"></path>
-                            <path d="M8 21h8"></path>
-                        </svg>
-                    </div>
-
-                    <div class="hero-label">RADIO TALK</div>
-                </div>
-
-                <h1>ラジオトーク</h1>
-
-                <div class="hero-accent" aria-hidden="true"></div>
+                <h1 class="radio-logo-heading">
+                    <img class="radio-header-logo" src="images/radio-talk-logo.png" alt="ラジオトーク" width="2048"
+                        height="682">
+                </h1>
 
                 <p>
                     建設業に役立つ知識を<span class="pc-comma">、</span><br class="sp-only">
@@ -251,7 +239,12 @@
 
         <!-- 動画の差し替え：data-youtube-id をYouTube動画IDに変更してください -->
         <section class="comic-section radio-video-section" aria-label="今回のテーマの動画">
-            <div class="radio-video-heading"><h3>動画で見る</h3><span>日本語</span></div>
+            <div class="radio-video-heading">
+                <h3>動画で見る</h3><span>日本語</span>
+            </div>
+            <p class="video-viewing-note">
+                このページ内で再生してご覧ください
+            </p>
             <div class="radio-video-stage" id="radio-video-stage">
                 <div id="radio-video" data-youtube-id="hVzj_WFUm_U" data-language="ja"></div>
                 <button type="button" class="video-close" hidden>大画面を閉じる</button>
@@ -260,10 +253,13 @@
                 <button type="button" data-video-skip="-10" disabled aria-label="動画を10秒戻す">−10秒</button>
                 <button type="button" data-video-skip="10" disabled aria-label="動画を10秒進める">＋10秒</button>
                 <label>再生速度 <select id="video-speed" disabled aria-label="動画の再生速度">
-                    <option value="1">1倍</option><option value="1.25">1.25倍</option>
-                    <option value="1.5">1.5倍</option><option value="2">2倍</option>
-                </select></label>
-                <button type="button" id="video-expand" aria-controls="radio-video-stage" aria-expanded="false">⛶ 大画面</button>
+                        <option value="1">1倍</option>
+                        <option value="1.25">1.25倍</option>
+                        <option value="1.5">1.5倍</option>
+                        <option value="2">2倍</option>
+                    </select></label>
+                <button type="button" id="video-expand" aria-controls="radio-video-stage" aria-expanded="false">⛶
+                    大画面</button>
             </div>
             <p class="video-message" role="status" hidden></p>
         </section>
