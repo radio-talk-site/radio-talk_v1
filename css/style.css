@@ -3507,3 +3507,873 @@ dialog.radio-image-viewer::backdrop {
     margin-top: 8px;
   }
 }
+/* 2026-11-17 動画・音声を独立したカードにする */
+.white-mist .radio-video-section,
+.white-mist #audio-area {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  margin: 0 0 22px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #cfe4f5;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px rgba(72,124,161,.07);
+}
+.white-mist .radio-video-section { display: block; }
+.white-mist .media-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin: 0 0 22px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: linear-gradient(110deg,#d9efff,#c2e6ff);
+  color: #163e5e;
+}
+.white-mist .media-heading h3 {
+  display: block;
+  margin: 0;
+  font-size: clamp(18px,2.3vw,26px);
+  font-weight: 700;
+  line-height: 1.4;
+}
+.white-mist .media-heading-icon {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  box-sizing: content-box;
+  padding-right: 16px;
+  border-right: 1px solid #6f9ab9;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* 旧 .radio-video-heading span のバッジ指定を翻訳には適用しない */
+.white-mist .media-heading .media-heading-translation {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #56758e;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.5;
+}
+.white-mist .media-heading .media-language-badge {
+  margin-left: auto;
+  padding: 4px 14px;
+  border: 1px solid #acd0ed;
+  border-radius: 999px;
+  background: #f8fcff;
+  color: #163e5e;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.white-mist .media-heading-note {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 400;
+  color: #365e7a;
+}
+.white-mist .radio-video-stage {
+  width: min(100%,760px);
+  margin: 0 auto;
+}
+.white-mist .radio-video-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(110deg,#e0f2ff,#cbeaff);
+}
+.white-mist .radio-video-tools label { margin: 0 8px; }
+.white-mist .radio-video-tools button,
+.white-mist .radio-video-tools select {
+  background: #f8fcff;
+  border-color: #aacdec;
+}
+.white-mist .video-message:not([hidden]) { margin: 12px 8px 4px; }
+.white-mist #audio-area .tabs {
+  width: min(86%,760px);
+  margin: 0 auto 12px;
+}
+.white-mist #audio-area .custom-player { padding-top: 8px; border-top: 0; }
+.white-mist #audio-area .tab-panel { padding: 0 16px 14px; }
+.white-mist #audio-area .player-header { margin-bottom: 12px; }
+.white-mist #audio-area .player-controls { margin: 14px 0 18px; }
+.white-mist .mist-transcripts { margin-top: 0; }
+.layout-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+/* 拡大中はカード内の通常サイズ指定を解除 */
+.white-mist .radio-video-stage.is-expanded,
+.white-mist .radio-video-stage:fullscreen {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+@media (max-width:640px) {
+  .white-mist .radio-video-section,
+  .white-mist #audio-area { padding: 8px; margin-bottom: 16px; border-radius: 14px; }
+  .white-mist .media-heading {
+    gap: 6px 8px;
+    padding: 12px 10px;
+    margin-bottom: 16px;
+    border-radius: 9px;
+  }
+  .white-mist .media-heading-icon {
+    flex-basis: 20px;
+    width: 20px;
+    height: 20px;
+    padding-right: 8px;
+  }
+  .white-mist .media-heading h3 { font-size: 17px; }
+  .white-mist .media-heading .media-heading-translation { font-size: 11px; }
+  .white-mist .media-heading .media-language-badge { font-size: 11px; padding: 3px 8px; }
+  .white-mist .media-heading-note { flex-basis: 100%; margin: 0 0 0 37px; font-size: 11px; }
+  .white-mist .radio-video-tools {
+    display: grid;
+    grid-template-columns: repeat(4,minmax(0,1fr));
+    gap: 5px;
+    padding: 8px 5px;
+    margin-top: 12px;
+  }
+  .white-mist .radio-video-tools button,
+  .white-mist .radio-video-tools select { width: 100%; min-width: 0; padding: 8px 2px; font-size: 12px; }
+  .white-mist .radio-video-tools label { display: block; margin: 0; font-size: 0; }
+  .white-mist #audio-area .tabs { width: calc(100% - 8px); }
+  .white-mist #audio-area .tab-panel { padding: 0 10px 12px; }
+}
+@media (max-width:360px) {
+  .white-mist .media-heading h3 { font-size: 15px; }
+  .white-mist .media-heading { column-gap: 6px; }
+  .white-mist .media-heading .media-heading-translation { font-size: 10px; }
+}
+
+/* 動画の操作部分：背景の帯をなくして配置を整理 */
+.white-mist .radio-video-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+
+  margin: 18px 0 0;
+  padding: 14px 4px 0;
+
+  background: transparent;
+  border-top: 1px solid #e1eaf1;
+  border-radius: 0;
+}
+
+/* スキップ・大画面ボタン */
+.white-mist .radio-video-tools button {
+  width: auto;
+  min-height: 40px;
+  padding: 8px 13px;
+
+  background: #fff;
+  border: 1px solid #d5dfe8;
+  border-radius: 8px;
+  box-shadow: none;
+
+  color: #34536c;
+  font-size: 13px;
+}
+
+/* 再生速度 */
+.white-mist .radio-video-tools label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin: 0 0 0 8px;
+  color: #64788a;
+  font-size: 12px;
+}
+
+.white-mist .radio-video-tools select {
+  width: auto;
+  min-width: 68px;
+  min-height: 40px;
+  padding: 8px;
+
+  background: #fff;
+  border: 1px solid #d5dfe8;
+  border-radius: 8px;
+
+  color: #34536c;
+  font-size: 13px;
+}
+
+/* 大画面ボタンだけ右端へ */
+.white-mist .radio-video-tools #video-expand {
+  margin-left: auto;
+}
+
+/* 続き再生などの案内 */
+.white-mist .video-message:not([hidden]) {
+  margin: 10px 4px 2px;
+  color: #64788a;
+  font-size: 12px;
+}
+
+@media (hover: hover) {
+  .white-mist .radio-video-tools button:not(:disabled):hover {
+    background: #f5f7fa;
+    border-color: #aabccc;
+  }
+}
+
+/* スマホ：4つの操作を同じ行に収める */
+@media (max-width: 640px) {
+  .white-mist .radio-video-tools {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+
+    margin-top: 12px;
+    padding: 12px 0 0;
+  }
+
+  .white-mist .radio-video-tools button,
+  .white-mist .radio-video-tools select {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px 2px;
+    font-size: 12px;
+  }
+
+  .white-mist .radio-video-tools label {
+    display: block;
+    min-width: 0;
+    margin: 0;
+    font-size: 0;
+  }
+
+  .white-mist .radio-video-tools #video-expand {
+    margin: 0;
+    white-space: nowrap;
+  }
+}
+
+/* 動画と操作欄の左右をそろえる */
+.white-mist .radio-video-tools {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 760px;
+  margin: 14px auto 0;
+  padding: 0;
+
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+/* 共通 */
+.white-mist .radio-video-tools button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: auto;
+  min-height: 44px;
+  padding: 0 14px;
+
+  background: #fff;
+  border: 1px solid #dfe7ed;
+  border-radius: 10px;
+  box-shadow: none;
+
+  color: #456279;
+  font-size: 13px;
+  font-weight: 500;
+
+  transition:
+    background .2s,
+    border-color .2s,
+    transform .2s;
+}
+
+.white-mist .radio-video-tools button svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 10秒移動：円形の矢印と数字 */
+.white-mist .radio-video-tools .video-step {
+  position: relative;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.white-mist .video-step svg {
+  width: 29px;
+  height: 29px;
+}
+
+.white-mist .video-step span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -42%);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+/* 再生速度 */
+.white-mist .radio-video-tools .video-rate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  min-width: 0;
+  margin: 0 0 0 8px;
+  padding-left: 18px;
+  border-left: 1px solid #e3e9ee;
+
+  color: #7a8b99;
+  font-size: 11px;
+}
+
+.white-mist .video-rate select {
+  width: 72px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 8px;
+
+  background: #fff;
+  border: 1px solid #dfe7ed;
+  border-radius: 10px;
+
+  color: #456279;
+  font-size: 13px;
+}
+
+/* 大画面 */
+.white-mist .radio-video-tools #video-expand {
+  margin-left: auto;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+/* 案内文も動画の左端にそろえる */
+.white-mist .video-message:not([hidden]) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 760px;
+  margin: 10px auto 2px;
+
+  color: #7a8b99;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+@media (hover: hover) {
+  .white-mist .radio-video-tools button:not(:disabled):hover {
+    background: #f5f8fa;
+    border-color: #b8cad8;
+    transform: translateY(-1px);
+  }
+}
+
+@media (max-width: 640px) {
+  .white-mist .radio-video-tools {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 0;
+  }
+
+  .white-mist .radio-video-tools .video-rate {
+    gap: 0;
+    margin-left: 2px;
+    padding-left: 10px;
+    font-size: 11px;
+  }
+
+  .white-mist .video-rate > span {
+    display: none;
+  }
+
+  .white-mist .video-rate select {
+    width: 64px;
+    font-size: 12px;
+  }
+
+  .white-mist .radio-video-tools #video-expand {
+    width: auto;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+}
+
+/* =====================================
+   最初の選択画面
+===================================== */
+
+body:has(#rt-entry:not([hidden])) {
+  overflow: hidden;
+}
+
+#rt-entry[hidden] {
+  display: none !important;
+}
+
+.rt-entry,
+.rt-entry * {
+  box-sizing: border-box;
+}
+
+.rt-entry {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  background:
+    radial-gradient(
+      ellipse at 0% 0%,
+      #dff4ff 0,
+      transparent 43%
+    ),
+    radial-gradient(
+      ellipse at 100% 0%,
+      #e5f6ff 0,
+      transparent 43%
+    ),
+    #fcfcfd;
+
+  color: #142b46;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rt-entry-inner {
+  width: min(100%, 540px);
+  margin: 0 auto;
+
+  padding:
+    max(48px, env(safe-area-inset-top))
+    24px
+    max(40px, env(safe-area-inset-bottom));
+}
+
+/* ロゴ */
+.rt-entry-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 17px;
+
+  margin: 0 0 56px;
+  text-align: center;
+}
+
+.rt-brand-name {
+  margin: 0;
+  font-size: clamp(23px, 6vw, 30px);
+  font-weight: 600;
+  letter-spacing: .08em;
+  line-height: 1.5;
+}
+
+.rt-brand-en {
+  margin: 5px 0 0;
+  color: #60758c;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .38em;
+}
+
+/* 小さな波形 */
+.rt-brand-wave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 26px;
+}
+
+.rt-brand-wave i {
+  display: block;
+  width: 3px;
+  height: 9px;
+  border-radius: 5px;
+  background: #20bedc;
+}
+
+.rt-brand-wave i:nth-child(2) {
+  height: 19px;
+}
+
+.rt-brand-wave i:nth-child(3) {
+  height: 26px;
+}
+
+.rt-brand-wave i:nth-child(4) {
+  height: 13px;
+}
+
+/* 中央の見出し */
+.rt-entry-heading {
+  margin: 0 0 32px;
+  text-align: center;
+}
+
+.rt-entry-heading h2 {
+  margin: 0 0 15px;
+  color: #142b46;
+  font-size: clamp(23px, 6vw, 30px);
+  font-weight: 500;
+  letter-spacing: .04em;
+  line-height: 1.5;
+}
+
+.rt-entry-heading p {
+  margin: 3px 0;
+  color: #738399;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.rt-entry-accent {
+  display: block;
+  width: 35px;
+  height: 3px;
+  margin: 20px auto 0;
+  border-radius: 9px;
+  background: #22bfdc;
+}
+
+/* 選択肢 */
+.rt-entry-options {
+  display: grid;
+  gap: 12px;
+}
+
+.rt-choice {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  width: 100%;
+  min-height: 66px;
+  margin: 0;
+  padding: 15px 20px;
+
+  background: #fff;
+  border: 1px solid #edf0f4;
+  border-radius: 13px;
+  box-shadow:
+    0 4px 15px rgba(31, 54, 80, .045),
+    0 1px 2px rgba(31, 54, 80, .025);
+
+  color: #142b46;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    border-color .2s,
+    box-shadow .2s,
+    transform .2s;
+}
+
+.rt-choice-video {
+  border-color: #426486;
+}
+
+.rt-choice > svg {
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rt-choice-arrow {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+
+  border-top: 1.5px solid #657a92;
+  border-right: 1.5px solid #657a92;
+  transform: rotate(45deg);
+}
+
+.rt-choice-divider {
+  width: 100%;
+  height: 1px;
+  margin: 6px 0;
+
+  border: 0;
+  background: #d6e3ef;
+}
+
+.rt-choice:focus-visible {
+  outline: 3px solid #47b8df;
+  outline-offset: 4px;
+}
+
+@media (hover: hover) {
+  .rt-choice:hover {
+    border-color: #7c9bb7;
+    box-shadow: 0 6px 20px rgba(31, 54, 80, .09);
+    transform: translateY(-2px);
+  }
+}
+
+.rt-choice:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 360px) {
+  .rt-entry-inner {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .rt-choice {
+    gap: 12px;
+    padding-right: 16px;
+    padding-left: 16px;
+    font-size: 14px;
+  }
+
+  .rt-entry-heading p {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rt-choice {
+    transition: none;
+  }
+}
+
+/* =====================================
+   選択後の動画／音声タブ
+===================================== */
+
+.rt-media-navigation {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 18px;
+}
+
+.rt-media-tabs {
+  display: flex;
+  flex: 1;
+  min-width: 220px;
+  gap: 4px;
+
+  padding: 4px;
+  background: #edf4f9;
+  border-radius: 12px;
+}
+
+.rt-media-tab {
+  flex: 1;
+  min-height: 44px;
+  padding: 9px 12px;
+
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #6a7d90;
+
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.rt-media-tab[aria-selected="true"] {
+  background: #fff;
+  color: #183e5c;
+  box-shadow: 0 2px 7px rgba(37, 69, 99, .08);
+}
+
+.rt-return-menu {
+  padding: 8px 4px;
+  border: 0;
+  background: transparent;
+  color: #657b90;
+
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.rt-media-tab:focus-visible,
+.rt-return-menu:focus-visible {
+  outline: 3px solid #47b8df;
+  outline-offset: 3px;
+}
+
+/* 既存CSSより優先して、選んだ方だけ表示 */
+body.white-mist .rt-media-panel[hidden] {
+  display: none !important;
+}
+
+/* 動画操作を元の文字ボタンに戻す */
+.white-mist .radio-video-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+
+  width: 100%;
+  max-width: 760px;
+  margin: 14px auto 0;
+  padding: 0;
+
+  background: transparent;
+  border: 0;
+}
+
+.white-mist .radio-video-tools button,
+.white-mist .radio-video-tools select {
+  width: auto;
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 12px;
+
+  background: #fff;
+  border: 1px solid #d5dfe8;
+  border-radius: 8px;
+  box-shadow: none;
+
+  color: #34536c;
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.white-mist .radio-video-tools label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 0 8px;
+  padding: 0;
+  border: 0;
+
+  color: #64788a;
+  font-size: 12px;
+}
+
+.white-mist .radio-video-tools #video-expand {
+  margin-left: auto;
+}
+
+@media (max-width: 640px) {
+  .white-mist .radio-video-tools {
+    gap: 6px;
+  }
+
+  .white-mist .radio-video-tools button,
+  .white-mist .radio-video-tools select {
+    min-height: 44px;
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+
+  .white-mist .radio-video-tools label {
+    margin: 0;
+    font-size: 0;
+  }
+}
+
+/* 動画の字幕案内：ベトナム語・インドネシア語 */
+.white-mist .radio-video-heading .media-caption-note {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+
+  color: #647b90;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.white-mist .radio-video-heading .media-caption-note > span {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+@media (max-width: 640px) {
+  .white-mist .radio-video-heading .media-caption-note {
+    flex-basis: 100%;
+    margin: 5px 0 0;
+    font-size: 10px;
+    text-align: left;
+  }
+}
+
+/* 案内文の幅と位置を動画にそろえる */
+.white-mist .video-viewing-note {
+  box-sizing: border-box;
+  width: min(100%, 760px);
+  margin: 0 auto 12px;
+  padding: 0;
+  text-align: left;
+}
