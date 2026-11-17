@@ -2032,7 +2032,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const top = Math.max(
         12,
         Math.min(
-          rect.top + rect.height * 0.55 - height / 2,
+          rect.top + rect.height * 0.55 - height / 2 + 20,
           window.innerHeight - height - 12
         )
       );
@@ -2624,5 +2624,114 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   } else {
     setupMediaSwipe();
+  }
+})();
+
+/* =====================================
+   タブ一体型プレーヤーのレイアウト
+===================================== */
+
+(() => {
+  function setupUnifiedPlayer() {
+    const navigation = document.querySelector(
+      '.rt-media-navigation'
+    );
+
+    const video = document.querySelector(
+      '.radio-video-section'
+    );
+
+    const audio = document.getElementById('audio-area');
+
+    if (!navigation || !video || !audio) return;
+    if (document.querySelector('.rt-player-shell')) return;
+
+    // タブ・動画・音声を一つのカードへまとめる
+    const shell = document.createElement('div');
+    shell.className = 'rt-player-shell';
+
+    navigation.before(shell);
+    shell.append(navigation, video, audio);
+
+    // 既存ボタンのイベントは保ったままアイコンを追加
+    const videoTab = navigation.querySelector(
+      '[data-rt-view="video"]'
+    );
+
+    const audioTab = navigation.querySelector(
+      '[data-rt-view="audio"]'
+    );
+
+    if (videoTab) {
+      videoTab.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="6" width="12" height="12" rx="2"></rect>
+          <path d="m15 10 6-3v10l-6-3z"></path>
+        </svg>
+        <span>動画で見る</span>
+      `;
+    }
+
+    if (audioTab) {
+      audioTab.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 14v-2a8 8 0 0 1 16 0v2"></path>
+          <path d="M4 13h3v7H5a1 1 0 0 1-1-1z"></path>
+          <path d="M20 13h-3v7h2a1 1 0 0 0 1-1z"></path>
+        </svg>
+        <span>音声で聴く</span>
+      `;
+    }
+
+    // 字幕の案内を、青い見出しから動画の近くへ移動
+    const stage = video.querySelector('.radio-video-stage');
+
+    if (!stage) return;
+
+    const intro = document.createElement('div');
+    intro.className = 'rt-video-intro';
+
+    let viewingNote = video.querySelector(
+      '.video-viewing-note'
+    );
+
+    if (!viewingNote) {
+      viewingNote = document.createElement('p');
+      viewingNote.className = 'video-viewing-note';
+      viewingNote.textContent =
+        'このページ内で再生してご覧ください';
+    }
+
+    viewingNote.classList.remove('layout-sr-only');
+
+    let captionNote = video.querySelector(
+      '.media-caption-note'
+    );
+
+    if (!captionNote) {
+      captionNote = document.createElement('span');
+      captionNote.className = 'media-caption-note';
+
+      captionNote.innerHTML = `
+        <span lang="vi">
+          Chọn phụ đề trong cài đặt YouTube
+        </span>
+        <span lang="id">
+          Pilih subtitle di setelan YouTube
+        </span>
+      `;
+    }
+
+    intro.append(viewingNote, captionNote);
+    stage.before(intro);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      setupUnifiedPlayer
+    );
+  } else {
+    setupUnifiedPlayer();
   }
 })();

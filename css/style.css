@@ -4377,3 +4377,329 @@ body.white-mist .rt-media-panel[hidden] {
   padding: 0;
   text-align: left;
 }
+
+/* =====================================
+   タブとプレーヤーを一つのカードにまとめる
+===================================== */
+
+.white-mist .rt-player-shell {
+  box-sizing: border-box;
+  margin: 0 0 22px;
+  padding: 0 26px 20px;
+
+  background: #fff;
+  border: 1px solid #d5e7f4;
+  border-radius: 20px;
+
+  box-shadow: 0 5px 18px rgba(65, 111, 150, .05);
+}
+
+/* タブの列 */
+.white-mist .rt-player-shell .rt-media-navigation {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 16px;
+
+  margin: 0;
+  padding: 0;
+
+  border-bottom: 1px solid #dce6ef;
+}
+
+.white-mist .rt-player-shell .rt-media-tabs {
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+  gap: 20px;
+
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+/* 動画・音声のタブ */
+.white-mist .rt-player-shell .rt-media-tab {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  min-height: 70px;
+  margin: 0;
+  padding: 18px 14px;
+
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+
+  color: #7b8e9f;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.white-mist .rt-player-shell .rt-media-tab svg {
+  flex: 0 0 23px;
+  width: 23px;
+  height: 23px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.white-mist .rt-player-shell .rt-media-tab::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+
+  height: 3px;
+  border-radius: 3px;
+  background: transparent;
+}
+
+.white-mist .rt-player-shell
+.rt-media-tab[aria-selected="true"] {
+  background: transparent;
+  color: #193e5c;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.white-mist .rt-player-shell
+.rt-media-tab[aria-selected="true"]::after {
+  background: #19bfd5;
+}
+
+/* 選び直す */
+.white-mist .rt-player-shell .rt-return-menu {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 10px 0 10px 8px;
+
+  background: transparent;
+  border: 0;
+
+  color: #74899b;
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+/* キーボード操作時だけフォーカスを表示 */
+.white-mist .rt-player-shell .rt-media-tab:focus-visible,
+.white-mist .rt-player-shell .rt-return-menu:focus-visible {
+  outline: 2px solid #49a8cc;
+  outline-offset: -4px;
+}
+
+/* 内側の動画・音声の二重枠をなくす */
+body.white-mist .rt-player-shell .radio-video-section,
+body.white-mist .rt-player-shell #audio-area {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+
+  margin: 0;
+  padding: 0;
+
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* 重複する見出しは非表示 */
+.white-mist .rt-player-shell .radio-video-heading,
+.white-mist .rt-player-shell .radio-audio-heading {
+  display: none;
+}
+
+/* 動画の案内と字幕説明 */
+.white-mist .rt-video-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+
+  box-sizing: border-box;
+  width: min(100%, 760px);
+  margin: 22px auto 16px;
+}
+
+.white-mist .rt-video-intro .video-viewing-note {
+  position: static;
+  width: auto;
+  height: auto;
+  max-width: none;
+
+  margin: 0;
+  padding: 0;
+
+  overflow: visible;
+  clip-path: none;
+
+  color: #617c93;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: normal;
+}
+
+.white-mist .rt-video-intro .media-caption-note {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  gap: 3px;
+
+  margin: 0 0 0 auto;
+  padding: 0;
+
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+
+  color: #71869a;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.6;
+  text-align: right;
+}
+
+.white-mist .rt-video-intro .media-caption-note > span {
+  margin: 0;
+  padding: 0;
+
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/* 動画・操作・案内文の左右をそろえる */
+.white-mist .rt-player-shell .radio-video-stage {
+  width: min(100%, 760px);
+  margin: 0 auto;
+}
+
+.white-mist .rt-player-shell .radio-video-tools {
+  box-sizing: border-box;
+  width: min(100%, 760px);
+  margin: 14px auto 0;
+}
+
+.white-mist .rt-player-shell .video-message:not([hidden]) {
+  box-sizing: border-box;
+  width: min(100%, 760px);
+  margin: 10px auto 0;
+
+  color: #7a8fa0;
+  font-size: 11px;
+}
+
+/* 音声タブ側 */
+.white-mist .rt-player-shell #audio-area {
+  padding-top: 22px;
+}
+
+/* 大画面表示は通常の動画幅指定を解除 */
+.white-mist .rt-player-shell
+.radio-video-stage.is-expanded,
+.white-mist .rt-player-shell
+.radio-video-stage:fullscreen {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+/* 選択していない方は非表示 */
+body.white-mist .rt-player-shell .rt-media-panel[hidden] {
+  display: none !important;
+}
+
+/* スマホ */
+@media (max-width: 640px) {
+  .white-mist .rt-player-shell {
+    margin-bottom: 16px;
+    padding: 0 14px 16px;
+    border-radius: 16px;
+  }
+
+  .white-mist .rt-player-shell .rt-media-navigation {
+    gap: 6px;
+  }
+
+  .white-mist .rt-player-shell .rt-media-tabs {
+    gap: 6px;
+  }
+
+  .white-mist .rt-player-shell .rt-media-tab {
+    gap: 6px;
+    min-height: 58px;
+    padding: 14px 8px;
+    font-size: 13px;
+  }
+
+  .white-mist .rt-player-shell .rt-media-tab svg {
+    flex-basis: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .white-mist .rt-player-shell .rt-return-menu {
+    padding-left: 2px;
+    font-size: 10px;
+  }
+
+  .white-mist .rt-video-intro {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 16px auto 12px;
+  }
+
+  .white-mist .rt-video-intro .video-viewing-note {
+    font-size: 11px;
+  }
+
+  .white-mist .rt-video-intro .media-caption-note {
+    margin: 0;
+    font-size: 10px;
+    text-align: left;
+  }
+
+  .white-mist .rt-player-shell #audio-area {
+    padding-top: 18px;
+  }
+}
+
+/* 動画・音声タブと言語選択の間に余白 */
+body.white-mist .rt-player-shell #audio-area {
+  padding-top: 28px;
+}
+
+@media (max-width: 640px) {
+  body.white-mist .rt-player-shell #audio-area {
+    padding-top: 24px;
+  }
+}
