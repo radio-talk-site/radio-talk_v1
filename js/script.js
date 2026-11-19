@@ -1339,9 +1339,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener('DOMContentLoaded', () => {
   const card = document.getElementById('audio-area');
-  const comics = document.querySelector('.comic-section');
+  const video = document.querySelector('.radio-video-section');
+  const comics = card?.querySelector('.audio-comic-gallery') ||
+    document.querySelector('.comic-section:not(.radio-video-section)');
 
-  if (!card || !comics) return;
+  if (!card || (!video && !comics)) return;
 
   document.body.classList.add('white-mist');
 
@@ -1366,15 +1368,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
   card.after(transcripts);
 
-  // 選択中の言語に合わせて原稿も切り替える
-  document.addEventListener('languageTabChanged', event => {
-    transcripts
-      .querySelectorAll('[data-transcript-language]')
-      .forEach(block => {
-        block.hidden =
-          block.dataset.transcriptLanguage !== event.detail.language;
-      });
+  // 動画と音声の原稿言語をそれぞれ保持する
+  let mediaView = 'audio';
+  let audioTranscriptLanguage = 'ja';
+  let videoTranscriptLanguage = 'ja';
+  const transcriptBlocks = transcripts.querySelectorAll('[data-transcript-language]');
+
+  transcripts.insertAdjacentHTML('afterbegin', `
+    <label class="video-transcript-language" style="display: block; padding: 12px 22px 0;" hidden>
+      原稿の言語
+      <select>
+        <option value="ja">日本語</option>
+        <option value="vi">Tiếng Việt</option>
+        <option value="id">Indonesia</option>
+      </select>
+    </label>
+  `);
+
+  const videoLanguageControl = transcripts.querySelector('.video-transcript-language');
+  const videoLanguageSelect = videoLanguageControl.querySelector('select');
+
+  function updateTranscriptLanguage() {
+    const isVideo = mediaView === 'video';
+    const language = isVideo ? videoTranscriptLanguage : audioTranscriptLanguage;
+
+    videoLanguageControl.hidden = !isVideo;
+    transcriptBlocks.forEach(block => {
+      block.hidden = block.dataset.transcriptLanguage !== language;
+    });
+  }
+
+  videoLanguageSelect.addEventListener('change', () => {
+    videoTranscriptLanguage = videoLanguageSelect.value;
+    updateTranscriptLanguage();
   });
+
+  document.addEventListener('languageTabChanged', event => {
+    audioTranscriptLanguage = event.detail.language;
+    updateTranscriptLanguage();
+  });
+
+  document.addEventListener('radioMediaViewChanged', event => {
+    mediaView = event.detail;
+    updateTranscriptLanguage();
+  });
+
+  updateTranscriptLanguage();
 
   // 再生時間をシークバーの下へ移動
   card.querySelectorAll('.custom-player').forEach(player => {
@@ -1383,12 +1422,9 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  // 動画は独立した枠のまま、音声枠の直前に配置する。
-  // 画像版は下の既存カルーセル処理へ進む。
-  if (comics.classList.contains('radio-video-section')) {
-    card.before(comics);
-    return;
-  }
+  // 動画と音声はそれぞれのタブに表示する。
+  if (video) card.before(video);
+  if (!comics) return;
 
   // 今ある3枚の画像を使用
   const images = [...comics.querySelectorAll('img')];
@@ -1455,6 +1491,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let position = 1;
   let busy = false;
   let timer;
+  let autoMoves = 0;
   let manual = false;
   let startX = null;
   let finishTimer;
@@ -1536,9 +1573,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function startAuto() {
     clearInterval(timer);
 
-    if (manual || reduced.matches || document.hidden) return;
-
-    let autoMoves = 0;
+    if (manual || reduced.matches || document.hidden || !viewport.clientWidth) {
+      return;
+    }
 
     timer = setInterval(() => {
       if (startX !== null || busy || viewer.open) return;
@@ -1925,8 +1962,16 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
   });
 
+  let isVisible = viewport.clientWidth > 0;
+
   new ResizeObserver(() => {
-    finish();
+    const visible = viewport.clientWidth > 0;
+
+    if (visible) finish();
+    if (visible !== isVisible) {
+      isVisible = visible;
+      startAuto();
+    }
   }).observe(viewport);
 
   document.addEventListener('visibilitychange', startAuto);
@@ -2406,6 +2451,10 @@ document.addEventListener('DOMContentLoaded', () => {
       video.hidden = !isVideo;
       audio.hidden = isVideo;
 
+      document.dispatchEvent(new CustomEvent('radioMediaViewChanged', {
+        detail: view
+      }));
+
       tabs.forEach(tab => {
         const selected = tab.dataset.rtView === view;
 
@@ -2571,7 +2620,7 @@ document.addEventListener('DOMContentLoaded', () => {
           target.closest(
             'iframe, input, select, textarea, a, details, ' +
             '.radio-video-tools, .radio-video-stage, ' +
-            '.language-slider, .tabs'
+            '.language-slider, .tabs, .mist-carousel'
           )
         ) return;
 
