@@ -1383,6 +1383,13 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
+  // 動画は独立した枠のまま、音声枠の直前に配置する。
+  // 画像版は下の既存カルーセル処理へ進む。
+  if (comics.classList.contains('radio-video-section')) {
+    card.before(comics);
+    return;
+  }
+
   // 今ある3枚の画像を使用
   const images = [...comics.querySelectorAll('img')];
   if (images.length !== 3) return;
@@ -2001,35 +2008,37 @@ document.addEventListener('DOMContentLoaded', () => {
       const rect = character.getBoundingClientRect();
       const viewportWidth = document.documentElement.clientWidth;
 
+      // キャラクターの左側を吹き出しの右端にする
       const right = Math.min(
         viewportWidth - 12,
         rect.left + rect.width * 0.12 - 12
       );
 
-      bubble.style.maxWidth = `${Math.min(
-        viewportWidth <= 640 ? 210 : 240,
-        Math.max(80, right - 12)
-      )
-        }px`;
+      const preferredWidth = viewportWidth <= 640 ? 210 : 240;
+      const availableWidth = Math.max(80, right - 12);
+
+      bubble.style.maxWidth =
+        `${Math.min(preferredWidth, availableWidth)}px`;
 
       const width = bubble.offsetWidth;
       const height = bubble.offsetHeight;
 
-      bubble.style.left = `${Math.max(
+      const left = Math.max(
         12,
         Math.min(right - width, viewportWidth - width - 12)
-      )
-        }px`;
+      );
 
-      // 初芽くんの体の中央付近に合わせる
-      bubble.style.top = `${Math.max(
+      // 文章の位置ではなく、キャラクターの位置を基準にする
+      const top = Math.max(
         12,
         Math.min(
-          rect.top + rect.height * 0.62 - height / 2,
+          rect.top + rect.height * 0.55 - height / 2 + 20,
           window.innerHeight - height - 12
         )
-      )
-        }px`;
+      );
+
+      bubble.style.left = `${left}px`;
+      bubble.style.top = `${top}px`;
     }
     function setLanguage(value) {
       language = messages[value] ? value : 'ja';
@@ -2079,4 +2088,650 @@ document.addEventListener('DOMContentLoaded', () => {
 
     character.click();
   }, 10000);
+})();
+// YouTube動画。音声の集計とは独立。rt_video_* はGA4自動イベントと区別する。
+document.addEventListener('DOMContentLoaded', () => {
+  const mount = document.getElementById('radio-video');
+  if (!mount) return;
+  const videoId = mount.dataset.youtubeId;
+  const language = mount.dataset.language || 'ja';
+  const episode = document.body.dataset.episodeId;
+  const section = mount.closest('.radio-video-section');
+  const stage = document.getElementById('radio-video-stage');
+  const expand = document.getElementById('video-expand');
+  const close = stage.querySelector('.video-close');
+  const message = section.querySelector('.video-message');
+  const skips = [...section.querySelectorAll('[data-video-skip]')];
+  const speed = document.getElementById('video-speed');
+  const audios = [...document.querySelectorAll('.audio-source')];
+  const key = `radio-youtube-${episode}-${videoId}-position`;
+  let player, ready = false, state = -1, last = null, lastWall = 0, timer;
+  let ranges = [], saved = 0, lastSave = 0;
+  const sent = new Set();
+  const tell = text => { message.textContent = text; message.hidden = !text; };
+  try { saved = Math.max(0, Number(localStorage.getItem(key)) || 0); } catch { }
+  function send(name, percent = 0) {
+    if (sent.has(name)) return;
+    sent.add(name);
+    const params = {
+      episode_id: episode, video_language: language,
+      video_id: videoId, video_file: `youtube:${videoId}`, video_provider: 'youtube',
+      video_url: `https://www.youtube.com/watch?v=${videoId}`,
+      video_percent: percent, send_to: 'G-PGVD9L27LG'
+    };
+    if (location.hostname === 'radio-talk-site.github.io' && typeof gtag === 'function') {
+      gtag('event', name, params);
+    } else {
+      console.info('[動画計測テスト・GA4送信なし]', name, params);
+    }
+  }
+  // YouTubeにはplayedがないため、短い間隔で実再生範囲を推定する。
+  // シークによる大きな飛びは除外。同じ範囲の再視聴は重複加算しない。
+  function sample() {
+    if (!ready) return;
+    const now = performance.now(), pos = player.getCurrentTime(), duration = player.getDuration();
+    if (state === 1 && last !== null) {
+      const delta = pos - last, wall = (now - lastWall) / 1000;
+      const expected = wall * player.getPlaybackRate();
+      if (wall > 0 && wall <= 2 && delta > 0 && delta <= expected + 0.35) {
+        ranges.push([Math.max(0, last), Math.min(duration, pos)]);
+        ranges.sort((a, b) => a[0] - b[0]);
+        const merged = [];
+        for (const range of ranges) {
+          const tail = merged[merged.length - 1];
+          if (tail && range[0] <= tail[1]) tail[1] = Math.max(tail[1], range[1]);
+          else merged.push([...range]);
+        }
+        ranges = merged;
+        const percent = duration > 0 ? ranges.reduce((sum, r) => sum + r[1] - r[0], 0) / duration * 100 : 0;
+        for (const [threshold, name] of [[25, 'rt_video_25'], [50, 'rt_video_50'], [75, 'rt_video_75'], [95, 'rt_video_complete']]) {
+          if (percent >= threshold) send(name, threshold);
+        }
+      }
+    }
+    last = pos; lastWall = now;
+  }
+  function save() {
+    if (!ready) return;
+    if (state === 1 && Date.now() - lastSave < 1500) return;
+    lastSave = Date.now();
+    try { localStorage.setItem(key, String(state === 0 ? 0 : player.getCurrentTime())); } catch { }
+  }
+  function rates() {
+    const available = player.getAvailablePlaybackRates();
+    speed.replaceChildren(...available.map(rate => {
+      const option = document.createElement('option');
+      option.value = String(rate); option.textContent = `${rate}倍`; return option;
+    }));
+    speed.value = String(player.getPlaybackRate());
+    speed.disabled = available.length < 2;
+  }
+  function init() {
+    if (player) return;
+    player = new YT.Player('radio-video', {
+      videoId, width: '100%', height: '428',
+      playerVars: { origin: location.origin, playsinline: 1, controls: 1, fs: 1, rel: 0, start: Math.floor(saved) },
+      events: {
+        onReady(event) {
+          player = event.target; ready = true; clearTimeout(loadTimeout);
+          player.getIframe().title = '今回のテーマの動画（日本語）';
+          player.getIframe().setAttribute('allowfullscreen', '');
+          skips.forEach(b => { b.disabled = false; }); rates();
+          tell(saved > 0 ? '前回の続きから再生できます' : '');
+          timer = setInterval(() => { sample(); save(); }, 250);
+        },
+        onStateChange(event) {
+          sample(); state = event.data; last = null;
+          if (state === 1) {
+            audios.forEach(audio => audio.pause());
+            send('rt_video_start'); tell(''); sample(); rates();
+          } else if (state === 3) tell('動画を読み込んでいます…');
+          else tell('');
+          save();
+        },
+        onPlaybackRateChange() { last = null; rates(); },
+        onError(event) {
+          clearTimeout(loadTimeout); state = -1; last = null;
+          skips.forEach(b => { b.disabled = true; }); speed.disabled = true;
+          tell(`動画を読み込めませんでした（${event.data}）。限定公開・埋め込み許可の設定と接続を確認し、ページを再読み込みしてください。`);
+        }
+      }
+    });
+  }
+  skips.forEach(button => button.addEventListener('click', () => {
+    if (!ready) return;
+    sample(); last = null;
+    player.seekTo(Math.max(0, Math.min(player.getDuration(), player.getCurrentTime() + Number(button.dataset.videoSkip))), true);
+  }));
+  speed.addEventListener('change', () => { if (ready) { sample(); last = null; player.setPlaybackRate(Number(speed.value)); } });
+  audios.forEach(audio => {
+    audio.addEventListener('play', () => { if (ready) player.pauseVideo(); });
+    audio.addEventListener('pause', () => {
+      const button = audio.closest('.tab-panel')?.querySelector('.play-button');
+      button?.classList.remove('is-playing');
+      button?.setAttribute('aria-label', ({ ja: '再生', vi: 'Phát', id: 'Putar' })[audio.dataset.language] || '再生');
+      if (audios.every(a => a.paused)) {
+        const mini = document.querySelector('.mini-play');
+        mini?.classList.remove('is-playing'); mini?.setAttribute('aria-label', '再生');
+      }
+    });
+  });
+  let oldOverflow = '';
+  const syncFullscreen = () => {
+    const full = document.fullscreenElement === stage || stage.classList.contains('is-expanded');
+    close.hidden = !full; expand.setAttribute('aria-expanded', String(full));
+  };
+  expand.addEventListener('click', async () => {
+    if (stage.requestFullscreen) {
+      try { await stage.requestFullscreen(); syncFullscreen(); close.focus(); return; } catch { }
+    }
+    if (stage.classList.contains('is-expanded')) return;
+    oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden'; stage.classList.add('is-expanded');
+    stage.setAttribute('role', 'dialog'); stage.setAttribute('aria-modal', 'true');
+    stage.setAttribute('aria-label', '動画の大画面表示'); syncFullscreen(); close.focus();
+  });
+  async function exit() {
+    if (document.fullscreenElement === stage) { try { await document.exitFullscreen(); } catch { } }
+    if (stage.classList.contains('is-expanded')) {
+      stage.classList.remove('is-expanded'); document.body.style.overflow = oldOverflow;
+      ['role', 'aria-modal', 'aria-label'].forEach(a => stage.removeAttribute(a));
+    }
+    syncFullscreen(); expand.focus();
+  }
+  close.addEventListener('click', exit);
+  document.addEventListener('fullscreenchange', syncFullscreen);
+  document.addEventListener('keydown', event => {
+    if (!stage.classList.contains('is-expanded')) return;
+    if (event.key === 'Escape') { event.preventDefault(); exit(); }
+    if (event.key === 'Tab' && !event.shiftKey && document.activeElement === close) {
+      event.preventDefault(); document.getElementById('radio-video').focus();
+    }
+  });
+  window.addEventListener('pagehide', () => { sample(); save(); clearInterval(timer); });
+  window.addEventListener('pageshow', event => {
+    if (event.persisted && ready) { last = null; clearInterval(timer); timer = setInterval(() => { sample(); save(); }, 250); }
+  });
+  document.addEventListener('visibilitychange', () => { sample(); save(); last = null; });
+  const loadTimeout = setTimeout(() => tell('YouTubeの読み込みに時間がかかっています。接続を確認し、ページを再読み込みしてください。'), 20000);
+  if (!/^https?:$/.test(location.protocol)) {
+    clearTimeout(loadTimeout); tell('VS CodeのLive Serverで開いてください（HTMLの直接起動ではYouTubeを再生できない場合があります）。'); return;
+  }
+  tell('動画を読み込んでいます…');
+  if (window.YT?.Player) init();
+  else {
+    const previous = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { if (typeof previous === 'function') previous(); init(); };
+    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+      const script = document.createElement('script'); script.src = 'https://www.youtube.com/iframe_api';
+      script.onerror = () => { clearTimeout(loadTimeout); tell('YouTubeに接続できません。接続を確認し、ページを再読み込みしてください。'); };
+      document.head.appendChild(script);
+    }
+  }
+});
+
+/* =====================================
+   選択画面 → 動画／音声タブ
+===================================== */
+
+(() => {
+  function setupEntryMenu() {
+    const entry = document.getElementById('rt-entry');
+    const video = document.querySelector('.radio-video-section');
+    const audio = document.getElementById('audio-area');
+
+    if (!entry || !video || !audio) return;
+    if (document.querySelector('.rt-media-navigation')) return;
+
+    // 以前の処理で動画が音声枠内に移動していても、
+    // 独立した位置へ戻す。
+    audio.before(video);
+
+    video.classList.add('rt-media-panel');
+    audio.classList.add('rt-media-panel');
+
+    const navigation = document.createElement('div');
+    navigation.className = 'rt-media-navigation';
+
+    navigation.innerHTML = `
+      <div class="rt-media-tabs"
+          role="tablist"
+          aria-label="動画・音声を選択">
+
+        <button type="button"
+            class="rt-media-tab"
+            id="rt-video-tab"
+            role="tab"
+            aria-selected="true"
+            data-rt-view="video">
+          動画で見る
+        </button>
+
+        <button type="button"
+            class="rt-media-tab"
+            id="rt-audio-tab"
+            role="tab"
+            aria-selected="false"
+            data-rt-view="audio">
+          音声で聴く
+        </button>
+      </div>
+
+      <button type="button" class="rt-return-menu">
+        選び直す
+      </button>
+    `;
+
+    video.before(navigation);
+
+    if (!video.id) video.id = 'rt-video-panel';
+
+    video.setAttribute('role', 'tabpanel');
+    video.setAttribute('aria-labelledby', 'rt-video-tab');
+
+    audio.setAttribute('role', 'tabpanel');
+    audio.setAttribute('aria-labelledby', 'rt-audio-tab');
+
+    const tabs = [
+      ...navigation.querySelectorAll('[data-rt-view]')
+    ];
+
+    tabs[0].setAttribute('aria-controls', video.id);
+    tabs[1].setAttribute('aria-controls', audio.id);
+
+    let currentView = 'video';
+
+    // 選択画面を表示中は、背後の操作を無効にする。
+    const backgroundElements = [
+      document.querySelector('.hero'),
+      document.querySelector('main'),
+      document.querySelector('.mini-player')
+    ].filter(Boolean);
+
+    const originalInert = new Map(
+      backgroundElements.map(element => [
+        element,
+        element.inert
+      ])
+    );
+
+    function setBackgroundInert(isOpen) {
+      backgroundElements.forEach(element => {
+        element.inert = isOpen
+          ? true
+          : originalInert.get(element);
+      });
+    }
+
+    function pauseVideo() {
+      const iframe = video.querySelector('iframe');
+
+      if (!iframe?.contentWindow) return;
+
+      try {
+        const origin = new URL(
+          iframe.src,
+          location.href
+        ).origin;
+
+        iframe.contentWindow.postMessage(
+          JSON.stringify({
+            event: 'command',
+            func: 'pauseVideo',
+            args: []
+          }),
+          origin
+        );
+      } catch {
+        // プレーヤー読み込み前は何もしない。
+      }
+    }
+
+    function pauseAudio() {
+      document.querySelectorAll('.audio-source')
+        .forEach(source => source.pause());
+    }
+
+    function showView(view) {
+      currentView = view;
+
+      const isVideo = view === 'video';
+
+      if (isVideo) {
+        pauseAudio();
+      } else {
+        pauseVideo();
+      }
+
+      video.hidden = !isVideo;
+      audio.hidden = isVideo;
+
+      tabs.forEach(tab => {
+        const selected = tab.dataset.rtView === view;
+
+        tab.setAttribute(
+          'aria-selected',
+          String(selected)
+        );
+
+        tab.tabIndex = selected ? 0 : -1;
+      });
+    }
+
+    function openPlayer(choice) {
+      const view = choice === 'video'
+        ? 'video'
+        : 'audio';
+
+      entry.hidden = true;
+      setBackgroundInert(false);
+
+      showView(view);
+
+      if (view === 'audio') {
+        // 既存の言語切り替え処理を利用する。
+        const languageButton = audio.querySelector(
+          `.tab-button[data-tab="${choice}"]`
+        );
+
+        languageButton?.click();
+      }
+
+      const activeTab = tabs.find(
+        tab => tab.dataset.rtView === view
+      );
+
+      navigation.scrollIntoView({
+        block: 'start',
+        behavior: 'auto'
+      });
+
+      activeTab?.focus({ preventScroll: true });
+    }
+
+    function openMenu() {
+      pauseAudio();
+      pauseVideo();
+
+      entry.hidden = false;
+      setBackgroundInert(true);
+
+      entry.scrollTop = 0;
+
+      entry.querySelector(
+        `[data-rt-choice="${currentView === 'video' ? 'video' : 'ja'
+        }"]`
+      )?.focus({ preventScroll: true });
+    }
+
+    entry.querySelectorAll('[data-rt-choice]')
+      .forEach(button => {
+        button.addEventListener('click', () => {
+          openPlayer(button.dataset.rtChoice);
+        });
+      });
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        showView(tab.dataset.rtView);
+      });
+    });
+
+    // キーボードの左右キーでもタブを切り替える。
+    navigation.querySelector('.rt-media-tabs')
+      .addEventListener('keydown', event => {
+        if (
+          !['ArrowLeft', 'ArrowRight', 'Home', 'End']
+            .includes(event.key)
+        ) return;
+
+        event.preventDefault();
+
+        const index = tabs.findIndex(
+          tab => tab.getAttribute('aria-selected') === 'true'
+        );
+
+        let next;
+
+        if (event.key === 'Home') {
+          next = 0;
+        } else if (event.key === 'End') {
+          next = tabs.length - 1;
+        } else {
+          const direction = event.key === 'ArrowRight'
+            ? 1
+            : -1;
+
+          next = (
+            index + direction + tabs.length
+          ) % tabs.length;
+        }
+
+        showView(tabs[next].dataset.rtView);
+        tabs[next].focus();
+      });
+
+    navigation.querySelector('.rt-return-menu')
+      .addEventListener('click', openMenu);
+
+    showView('video');
+    setBackgroundInert(true);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      setupEntryMenu
+    );
+  } else {
+    setupEntryMenu();
+  }
+})();
+
+/* 動画／音声を左右スワイプで切り替える */
+(() => {
+  function setupMediaSwipe() {
+    const navigation = document.querySelector(
+      '.rt-media-navigation'
+    );
+
+    if (!navigation || navigation.dataset.swipeReady) return;
+
+    navigation.dataset.swipeReady = 'true';
+
+    const videoTab = navigation.querySelector(
+      '[data-rt-view="video"]'
+    );
+
+    const audioTab = navigation.querySelector(
+      '[data-rt-view="audio"]'
+    );
+
+    if (!videoTab || !audioTab) return;
+
+    const areas = [
+      navigation.querySelector('.rt-media-tabs'),
+      document.querySelector('.radio-video-section'),
+      document.getElementById('audio-area')
+    ].filter(Boolean);
+
+    areas.forEach(area => {
+      let start = null;
+
+      area.addEventListener('touchstart', event => {
+        start = null;
+
+        if (event.touches.length !== 1) return;
+
+        // 再生操作・言語切替・原稿の操作を優先する
+        const target = event.target;
+
+        if (
+          target instanceof Element &&
+          target.closest(
+            'iframe, input, select, textarea, a, details, ' +
+            '.radio-video-tools, .radio-video-stage, ' +
+            '.language-slider, .tabs'
+          )
+        ) return;
+
+        const touch = event.touches[0];
+
+        start = {
+          x: touch.clientX,
+          y: touch.clientY
+        };
+      }, { passive: true });
+
+      area.addEventListener('touchend', event => {
+        if (!start || event.changedTouches.length !== 1) {
+          start = null;
+          return;
+        }
+
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - start.x;
+        const dy = touch.clientY - start.y;
+
+        start = null;
+
+        // 縦スクロールや小さな指の動きでは切り替えない
+        if (
+          Math.abs(dx) < 55 ||
+          Math.abs(dx) < Math.abs(dy) * 1.5
+        ) return;
+
+        // スワイプ後の意図しないクリックを防ぐ
+        if (event.cancelable) event.preventDefault();
+
+        if (dx < 0) {
+          audioTab.click();
+        } else {
+          videoTab.click();
+        }
+      }, { passive: false });
+
+      area.addEventListener('touchcancel', () => {
+        start = null;
+      }, { passive: true });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      setupMediaSwipe
+    );
+  } else {
+    setupMediaSwipe();
+  }
+})();
+
+/* =====================================
+   タブ一体型プレーヤーのレイアウト
+===================================== */
+
+(() => {
+  function setupUnifiedPlayer() {
+    const navigation = document.querySelector(
+      '.rt-media-navigation'
+    );
+
+    const video = document.querySelector(
+      '.radio-video-section'
+    );
+
+    const audio = document.getElementById('audio-area');
+
+    if (!navigation || !video || !audio) return;
+    if (document.querySelector('.rt-player-shell')) return;
+
+    // タブ・動画・音声を一つのカードへまとめる
+    const shell = document.createElement('div');
+    shell.className = 'rt-player-shell';
+
+    navigation.before(shell);
+    shell.append(navigation, video, audio);
+
+    // 既存ボタンのイベントは保ったままアイコンを追加
+    const videoTab = navigation.querySelector(
+      '[data-rt-view="video"]'
+    );
+
+    const audioTab = navigation.querySelector(
+      '[data-rt-view="audio"]'
+    );
+
+    if (videoTab) {
+      videoTab.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="6" width="12" height="12" rx="2"></rect>
+          <path d="m15 10 6-3v10l-6-3z"></path>
+        </svg>
+        <span>動画で見る</span>
+      `;
+    }
+
+    if (audioTab) {
+      audioTab.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 14v-2a8 8 0 0 1 16 0v2"></path>
+          <path d="M4 13h3v7H5a1 1 0 0 1-1-1z"></path>
+          <path d="M20 13h-3v7h2a1 1 0 0 0 1-1z"></path>
+        </svg>
+        <span>音声で聴く</span>
+      `;
+    }
+
+    // 字幕の案内を、青い見出しから動画の近くへ移動
+    const stage = video.querySelector('.radio-video-stage');
+
+    if (!stage) return;
+
+    const intro = document.createElement('div');
+    intro.className = 'rt-video-intro';
+
+    let viewingNote = video.querySelector(
+      '.video-viewing-note'
+    );
+
+    if (!viewingNote) {
+      viewingNote = document.createElement('p');
+      viewingNote.className = 'video-viewing-note';
+      viewingNote.textContent =
+        'このページ内で再生してご覧ください';
+    }
+
+    viewingNote.classList.remove('layout-sr-only');
+
+    let captionNote = video.querySelector(
+      '.media-caption-note'
+    );
+
+    if (!captionNote) {
+      captionNote = document.createElement('span');
+      captionNote.className = 'media-caption-note';
+
+      captionNote.innerHTML = `
+        <span lang="vi">
+          Chọn phụ đề trong cài đặt YouTube
+        </span>
+        <span lang="id">
+          Pilih subtitle di setelan YouTube
+        </span>
+      `;
+    }
+
+    intro.append(viewingNote, captionNote);
+    stage.before(intro);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      setupUnifiedPlayer
+    );
+  } else {
+    setupUnifiedPlayer();
+  }
 })();
